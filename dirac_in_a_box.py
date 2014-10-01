@@ -12,11 +12,13 @@ from subprocess import Popen, PIPE
 # Some things that won't change often.
 DIRAC_BRANCH="rel-v6r12"
 DIRACWEB_BRANCH="v1r3p7"
+DIRACGRIDPP_BRANCH="master"
 
 # We keep a dictionary of all our parameters for this install
 # This gets more parameters added as the install progresses.
 PARAMETERS={ "DIRAC_BRANCH": DIRAC_BRANCH,
              "DIRACWEB_BRANCH": DIRACWEB_BRANCH,
+             "DIRACGRIDPP_BRANCH": DIRACGRIDPP_BRANCH,
              "USERNAME": getpass.getuser(),
              "HOSTNAME": socket.gethostname(),
              "CADIR": "/etc/grid-security/certificates",
@@ -70,6 +72,7 @@ install_path = os.path.realpath(tmp_path)
 PARAMETERS["TARGET_DIR"] = install_path
 PARAMETERS["DIRAC_URL"] = "%s/%s" % (sys.argv[2], "DIRAC.git")
 PARAMETERS["DIRACWEB_URL"] = "%s/%s" % (sys.argv[2], "DIRACWeb.git")
+PARAMETERS["DIRACGRIDPP_URL"] = "%s/%s" % (sys.argv[2], "GridPPDIRAC.git")
 PARAMETERS["INSTALL_CONF"] = os.path.join(install_path, "etc/dinstall.cfg")
 
 print "\n\n[0/7] Checking Prerequisites..."
@@ -162,6 +165,8 @@ print """
  DIRAC Branch: %(DIRAC_BRANCH)s
  DIRACWeb code URL: %(DIRACWEB_URL)s
  DIRACWeb Branch: %(DIRACWEB_BRANCH)s
+ DIRACGridPP code URL: %(DIRACGRIDPP_URL)s
+ DIRACGridPP Branch: %(DIRACGRIDPP_BRANCH)s
 """ % PARAMETERS
 if not prompt_user():
   sys.exit(0)
@@ -172,7 +177,9 @@ if not os.path.exists(PARAMETERS["TARGET_DIR"]):
   os.mkdir(PARAMETERS["TARGET_DIR"])
 os.chdir(PARAMETERS["TARGET_DIR"])
 # Check out the code
-for code_name, code_target in (("DIRAC", "DIRAC"), ("DIRACWEB", "Web")):
+for code_name, code_target in (("DIRAC", "DIRAC"), \
+                               ("DIRACWEB", "Web"), \
+                               ("DIRACGRIDPP", "GridPPDIRAC")):
   code_url = PARAMETERS["%s_URL" % code_name]
   code_branch = PARAMETERS["%s_BRANCH" % code_name]
   code_path = os.path.join(PARAMETERS["TARGET_DIR"], code_target)
@@ -212,7 +219,7 @@ LocalInstallation
   InstallType = server
   UseVersionsDir = no
   TargetPath = %(TARGET_DIR)s
-  ExtraModules = Web
+  ExtraModules = Web, GridPP
   SiteName = DEV.DIRAC
   Setup = Development
   InstanceName = Devel
@@ -348,6 +355,10 @@ print "\n\n[6/7] Loading DIRAC Config..."
 # First we need to write out config template
 # We'll do a generic "Imperial & CERN Set-up"
 main_cfg = """
+DIRAC
+{
+  Extensions = GridPP
+}
 Registry
 {
   DefaultGroup = dteam_user, user
