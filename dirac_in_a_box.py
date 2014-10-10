@@ -680,6 +680,7 @@ Resources
                 maxCPUTime = 0
                 SI00 = 2160
                 MaxTotalJobs = 4000
+                WaitingToRunningRatio = 10
                 VO = dteam
                 VO += vo.londongrid.ac.uk
               }
@@ -701,6 +702,7 @@ Resources
                 maxCPUTime = 2880
                 SI00 = 2250
                 MaxTotalJobs = 4000
+                WaitingToRunningRatio = 10
                 VO = dteam
                 VO += vo.londongrid.ac.uk
               }
@@ -734,6 +736,7 @@ Resources
                 maxCPUTime = 0
                 SI00 = 2370
                 MaxTotalJobs = 4000
+                WaitingToRunningRatio = 10
                 VO = dteam
               }
             }
@@ -766,6 +769,7 @@ Resources
                 maxCPUTime = 2880
                 SI00 = 2125
                 MaxTotalJobs = 4000
+                WaitingToRunningRatio = 10
                 VO = dteam
               }
             }
@@ -786,6 +790,7 @@ Resources
                 maxCPUTime = 2880
                 SI00 = 2125
                 MaxTotalJobs = 4000
+                WaitingToRunningRatio = 10
                 VO = dteam
               }
             }
