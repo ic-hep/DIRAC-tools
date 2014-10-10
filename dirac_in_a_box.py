@@ -479,6 +479,10 @@ Systems
         {
           GridEnv = /etc/profile.d/grid-env
         }
+        SiteDirector
+        {
+          ExtraPilotOptions = -u http://homes.hep.ph.ic.ac.uk/~sf105/dirac/installSource -t https://github.com/ic-hep/DIRAC.git -t https://github.com/ic-hep/GridPPDIRAC.git
+        }
         SiteDirectorDteam
         {
           Community = dteam
