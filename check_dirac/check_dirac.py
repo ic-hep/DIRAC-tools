@@ -7,7 +7,7 @@ import install_ui
 import make_jdls
 
 
-sites_to_check = ["UKI-LT2-IC-HEP", "UKI-LT2-Brunel", "UKI-SCOTGRID-GLASGOW", "UKI-SOUTHGRID-RALPP"]
+sites_to_check = ["UKI-LT2-IC-HEP", "UKI-LT2-Brunel", "UKI-SCOTGRID-GLASGOW", "UKI-SOUTHGRID-RALPP", "UKI-NORTHGRID-LANCS-HEP"]
 
 
 print "Welcome to the basic dirac test script."
