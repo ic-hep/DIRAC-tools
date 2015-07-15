@@ -13,12 +13,16 @@ import pexpect
 from check_dirac_helpers import simple_run
 from subprocess import Popen, PIPE
 
+UI_PYTHON_VERSION = "27" 
 
 # UI_VERSION = "v6r12p34"
 # LCG_BINDINGS = "2015-03-19"
-UI_VERSION = "v6r13p1"
-UI_PYTHON_VERSION = "27" 
-LCG_BINDINGS = "2015-06-10"
+
+#UI_VERSION = "v6r13p1"
+#LCG_BINDINGS = "2015-06-10"
+
+UI_VERSION = "v6r13p5"
+LCG_BINDINGS = "2015-06-23"
 
 # dirac-in-a-box puts these in a dictionary, let's go with that
 PARAMETERS={ "USERCERT": os.path.expanduser("~/.globus/usercert.pem"),

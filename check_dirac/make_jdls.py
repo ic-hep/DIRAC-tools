@@ -17,7 +17,7 @@ StdError = "job.log";
 InputSandbox = "gridpp.sh";
 OutputSandbox = "job.log";
 ShallowRetryCount = 2;
-Site = %s
+Site = "%s";
 ]
 """
 
@@ -79,6 +79,8 @@ def make_jdls(sites_to_check):
     # jdl file name = sitename.jdl
     filename = site + ".jdl"
     dirac_sitename = "LCG." + site + ".uk"
+    if site == "EFDA-JET":
+      dirac_sitename = "LCG." + site + ".xx"
     jdlfile = open(filename, 'w')
     jdlfile.write(JDLTEXT % (dirac_sitename))
 
