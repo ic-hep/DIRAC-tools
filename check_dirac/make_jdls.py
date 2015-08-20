@@ -83,6 +83,18 @@ def make_jdls(sites_to_check):
       dirac_sitename = "LCG." + site + ".xx"
     jdlfile = open(filename, 'w')
     jdlfile.write(JDLTEXT % (dirac_sitename))
+    jdlfile.close() # needed ?
+    # after previous problems, make sure the InputData 
+    # syntax still works (use Imperial only)
+    if site == "UKI-LT2-IC-HEP":
+      ic_jdl = open("UKI-LT2-IC-HEP.jdl", "r")
+      contents = ic_jdl.readlines()
+      ic_jdl.close()
+      contents.insert(6, "InputData = {\"/gridpp/user/dbauer/gridpptestfile.txt\"};\n")
+      ic_jdl = open("UKI-LT2-IC-HEP.jdl", "w")
+      contents = "".join(contents)
+      ic_jdl.write(contents)
+      ic_jdl.close()
 
 
   proxycrap = complex_run(["dirac-proxy-info"])
