@@ -19,8 +19,11 @@ UI_PYTHON_VERSION = "27"
 # UI_VERSION = "v6r13p9"
 # LCG_BINDINGS = "2015-07-09"
 
-UI_VERSION = "v6r13p12"
-LCG_BINDINGS = "2015-06-23"
+# UI_VERSION = "v6r13p12"
+# LCG_BINDINGS = "2015-06-23"
+
+UI_VERSION = "v6r14p5"
+LCG_BINDINGS = "2015-09-03"
 
 
 # note: There might be newer/better (though not necessarily both)
