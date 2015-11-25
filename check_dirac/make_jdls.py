@@ -8,8 +8,6 @@ from check_dirac_helpers import simple_run
 from check_dirac_helpers import complex_run
 
 
-#  VO section in Registry
-
 JDLTEXT="""[
 Executable = "gridpp.sh";
 StdOutput = "job.log";
@@ -18,6 +16,7 @@ InputSandbox = "gridpp.sh";
 OutputSandbox = "job.log";
 ShallowRetryCount = 2;
 Site = "%s";
+JobName = "DiracTest";
 ]
 """
 
