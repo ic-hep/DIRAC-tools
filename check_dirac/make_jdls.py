@@ -68,9 +68,32 @@ echo "Removing file"
 dirac-dms-remove-files /gridpp/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.txt
 sleep 3
 
-echo -e "\n I am done here."
+echo -e "\nI am done here."
 
 """
+
+REPANDREGTEXT=r"""#!/bin/bash
+echo "Testing the dirac-dms-replicate-and-register-request command"
+MYDATE=`date +%%s`
+env > repregtest.${MYDATE}.txt
+echo "File to be uploaded: " repregtest.${MYDATE}.txt
+dirac-dms-add-file /gridpp/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt repregtest.${MYDATE}.txt UKI-LT2-IC-HEP-disk
+dirac-dms-replicate-and-register-request ddrarr_${MYDATE}  /gridpp/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt UKI-LT2-QMUL2-disk
+echo "Sleeping 120 s to give replicate request a chance to finish."
+sleep 120
+echo -e "\n" 
+echo "For reference the request name can be found in rep_and_reg_requests.txt"
+echo "ddrarr_${MYDATE} /gridpp/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt" >> rep_and_reg_requests.txt
+dirac-rms-show-request ddrarr_${MYDATE}
+
+echo -e "\nPlease remeber to delete the file if transfer was sucess full or cancel the request if it wasn't:"
+echo -e "dirac-dms-remove-files /gridpp/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt" 
+echo -e "dirac-rms-cancel-request ddrarr_${MYDATE}"
+
+echo -e "\nThe dirac-dms-replicate-and-register-request test script ends here."
+
+"""
+
 
 def make_jdls(sites_to_check):
 
@@ -117,3 +140,7 @@ def make_jdls(sites_to_check):
   os.chmod("gridpp.sh", 0744)
   
 
+  # file to test replicate and register command 
+  diracrepandregfile = open("repandreg.sh", "w")
+  diracrepandregfile.write(REPANDREGTEXT %diracinfo)
+  os.chmod("repandreg.sh", 0744)

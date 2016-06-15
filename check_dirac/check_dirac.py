@@ -28,7 +28,10 @@ sites_to_check = ["UKI-LT2-IC-HEP",
                   "UKI-NORTHGRID-MAN-HEP", 
                   "UKI-NORTHGRID-LIV-HEP",
                   "UKI-SOUTHGRID-OX-HEP",
-                  "UKI-SCOTGRID-GLASGOW"]
+                  "UKI-SCOTGRID-GLASGOW",
+                  "UKI-SOUTHGRID-RALPP",
+                  "RAL-LCG2"
+]
 
 # sites_to_check = ["UKI-LT2-IC-HEP"]
 
@@ -49,9 +52,8 @@ print os.getcwd()
 
 working_dir = os.getcwd()
 check_dirac_helpers.simple_run([os.path.join(working_dir, "gridpp.sh")])
+check_dirac_helpers.simple_run([os.path.join(working_dir, "repandreg.sh")])
 
-# can I use the simple_run here ?
-# does it still have the bashrc ?
 
 for site in sites_to_check:
   # jdl file name = sitename.jdl
