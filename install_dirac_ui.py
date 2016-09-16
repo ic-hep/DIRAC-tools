@@ -13,16 +13,8 @@ import pexpect
 from subprocess import Popen, PIPE
 
 UI_PYTHON_VERSION = "27"
-# UI_VERSION = "v6r13p1"
-# LCG_BINDINGS = "2015-06-10"
 
-# UI_VERSION = "v6r13p9"
-# LCG_BINDINGS = "2015-07-09"
-
-# UI_VERSION = "v6r13p12"
-# LCG_BINDINGS = "2015-06-23"
-
-UI_VERSION = "v6r14p5"
+UI_VERSION = "v6r15p6"
 LCG_BINDINGS = "2015-09-03"
 
 
