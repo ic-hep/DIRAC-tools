@@ -136,16 +136,9 @@ def main():
   for tpath in args[1:]:
     if tpath.endswith("/"):
       tpath = tpath.rstrip("/")
-    
     rrm.clear_directory(tpath, se_name, dry_run)
 
   rrm.print_stats()   
-
-#  directory_path = "/gridpp/test" # todo: remove backslash automatically
-#  se_name="UKI-LT2-IC-HEP-disk"
-#  rrm = RecursiveRm()
-#  rrm.clear_directory(directory_path, se_name, dry_run)
-
 
 
 if __name__ == "__main__":
