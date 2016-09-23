@@ -9,7 +9,7 @@ import getopt
 
 from DIRAC.Core.DISET.RPCClient import RPCClient
 from DIRAC.DataManagementSystem.Client.DataManager import DataManager
-
+from DIRAC.Core.Security.ProxyInfo import getProxyInfo
 
 
 class RecursiveRm(object):
@@ -84,7 +84,15 @@ class RecursiveRm(object):
     if se_name == "Any":
       print "%s" % filename
       if not dry_run:
-        self.__dm.removeFile(filename)
+        deleted = self.__dm.removeFile(filename)
+        if not deleted["OK"]:
+          print "Function call to removeFile failed, file not deleted: %s" \
+                                                            % str(deleted)
+          return False
+        elif not deleted["Value"]["Successful"]:
+          print "Failed to delete file: %s" % str(deleted)
+          return False
+
       return True
 
     # file exists only at the chosen SE
@@ -92,14 +100,30 @@ class RecursiveRm(object):
     if len(ses) == 1 and se_name in ses:
       print "%s" % filename
       if not dry_run:
-        self.__dm.removeFile(filename)
+        deleted = self.__dm.removeFile(filename)
+        if not deleted["OK"]:
+          print "Function call to removeFile failed, file not deleted: %s" \
+                                                            % str(deleted)
+          return False
+        elif not deleted["Value"]["Successful"]:
+          print "Failed to delete file: %s" % str(deleted)
+          return False
       return True
         
     # file exists at the chosen SE and elswhere -> delete replica at chosen SE
     if len(ses) > 1 and se_name in ses:
       print "%s" % filename
       if not dry_run:
-        self.__dm.removeReplica(se_name, filename)
+        deleted = self.__dm.removeReplica(se_name, filename)
+        if not deleted["OK"]:
+          print "Function call to removeReplica failed, replica not deleted: %s" \
+                                                                  % str(deleted)
+          return False
+        elif not deleted["Value"]["Successful"]:
+          print "Failed to delete replica: %s" % str(deleted)
+          return False
+
+
       return True
 
     return False
@@ -120,10 +144,18 @@ def main():
   opts, args = getopt.getopt(sys.argv[1:], "n")  
 
   if len(args) < 2:
-    print "Usage: recursiverm.py [-n] <SE> <path> [<path>...]"
+    print "Usage: recursiverm.py [-n] <SE> <LFN> [<LFN>...]"
     print "       -n: dryRun (list files to be deleted)"
     print "Use 'Any' for <SE> to delete all replicas in a directory"
+    print "Example: recursiverm.py -n UKI-LT2-IC-HEP-disk /vo.londongrid.ac.uk/test2"
     sys.exit(1)
+
+  proxy_info = getProxyInfo()   
+  if not "VOMS" in proxy_info["Value"] or not proxy_info["Value"]["VOMS"]:
+    print "Error: Your proxy does not contain a VOMS signature."
+    print "(Try using dirac-proxy-init -g [voname]_user -M)"
+    sys.exit(2)
+
 
   for opt, _ in opts:
     if opt == "-n":
@@ -132,10 +164,17 @@ def main():
 
   rrm = RecursiveRm()
 
-  se_name = args[0]
+  paths = []
   for tpath in args[1:]:
-    if tpath.endswith("/"):
-      tpath = tpath.rstrip("/")
+    tpath = os.path.normpath(tpath)
+    if len(tpath.split("/")) < 3:
+      print "Sorry, I can't let you do that Dave: Path %s is too broad." \
+                                                                    % tpath
+      sys.exit(3)
+    paths.append(tpath)
+
+  se_name = args[0]
+  for tpath in paths:
     rrm.clear_directory(tpath, se_name, dry_run)
 
   rrm.print_stats()   
