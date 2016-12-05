@@ -15,14 +15,8 @@ from subprocess import Popen, PIPE
 
 UI_PYTHON_VERSION = "27" 
 
-# UI_VERSION = "v6r12p34"
-# LCG_BINDINGS = "2015-03-19"
-
-#UI_VERSION = "v6r13p1"
-#LCG_BINDINGS = "2015-06-10"
-
-UI_VERSION = "v6r13p12"
-LCG_BINDINGS = "2015-06-23"
+UI_VERSION = "v6r15p24"
+LCG_BINDINGS = "2016-11-03"
 
 # dirac-in-a-box puts these in a dictionary, let's go with that
 PARAMETERS={ "USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
