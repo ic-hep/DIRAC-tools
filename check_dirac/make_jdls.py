@@ -14,7 +14,6 @@ StdOutput = "job.log";
 StdError = "job.log";
 InputSandbox = "gridpp.sh";
 OutputSandbox = "job.log";
-ShallowRetryCount = 2;
 Site = "%s";
 JobName = "DiracTest";
 ]
