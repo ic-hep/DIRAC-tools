@@ -36,6 +36,16 @@ echo -e " \n ================================== \n"
 # **** who am i ***
 dirac-proxy-info
 
+echo -e " \n"
+ISITVAC=${DIRACSITE:0:3}
+
+if [ "$ISITVAC" == "VAC" ]; then
+  echo "This is a VAC site"
+  echo "Listing content of \$DIRACROOT/etc/dirac.cfg"
+  cat ${DIRACROOT}/etc/dirac.cfg
+fi
+
+
 # use some CPU to prevent job getting killed for sitting idle
 perl -e '$z=time()+(2*60); while (time()<$z) { $j++; $j *= 1.1 for (1..9999); }'
 
@@ -54,17 +64,21 @@ echo -e "Expected: 2240404671 105 gridpptestfile.txt \n"
 
 echo -e "Creating a file, uploading it to gfe02"
 MYDATE=`date +%%s`
-env > testfile.${MYDATE}.txt
-echo "File to be uploaded: " testfile.${MYDATE}.txt
-dirac-dms-add-file -ddd /gridpp/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.txt testfile.${MYDATE}.txt UKI-LT2-IC-HEP-disk
+# for running within a UI
+if [ -z "${DIRACSITE}" ]; then
+  DIRACSITE=`hostname` 
+fi
+env > testfile.${MYDATE}.${DIRACSITE}.txt
+echo "File to be uploaded: " testfile.${MYDATE}.${DIRACSITE}.txt
+dirac-dms-add-file -ddd /gridpp/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt testfile.${MYDATE}.${DIRACSITE}.txt UKI-LT2-IC-HEP-disk
 sleep 3
 echo -e "\n"
 echo "Testing dirac-dms-lfn-replicas command"
-dirac-dms-lfn-replicas -ddd /gridpp/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.txt
+dirac-dms-lfn-replicas -ddd /gridpp/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt
 sleep 3
 echo -e "\n" 
 echo "Removing file"
-dirac-dms-remove-files /gridpp/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.txt
+dirac-dms-remove-files /gridpp/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt
 sleep 3
 
 echo -e "\nI am done here."
@@ -99,20 +113,17 @@ def make_jdls(sites_to_check):
   for site in sites_to_check:
     # jdl file name = sitename.jdl
     filename = site + ".jdl"
-    dirac_sitename = "LCG." + site + ".uk"
-    if site == "EFDA-JET":
-      dirac_sitename = "LCG." + site + ".xx"
     jdlfile = open(filename, 'w')
-    jdlfile.write(JDLTEXT % (dirac_sitename))
+    jdlfile.write(JDLTEXT % (site))
     jdlfile.close() # needed ?
     # after previous problems, make sure the InputData 
     # syntax still works (use Imperial only)
-    if site == "UKI-LT2-IC-HEP":
-      ic_jdl = open("UKI-LT2-IC-HEP.jdl", "r")
+    if site == "LCG.UKI-LT2-IC-HEP.uk":
+      ic_jdl = open("LCG.UKI-LT2-IC-HEP.uk.jdl", "r")
       contents = ic_jdl.readlines()
       ic_jdl.close()
       contents.insert(6, "InputData = {\"/gridpp/user/dbauer/gridpptestfile.txt\"};\n")
-      ic_jdl = open("UKI-LT2-IC-HEP.jdl", "w")
+      ic_jdl = open("LCG.UKI-LT2-IC-HEP.uk.jdl", "w")
       contents = "".join(contents)
       ic_jdl.write(contents)
       ic_jdl.close()
