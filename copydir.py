@@ -97,7 +97,7 @@ def main():
 
   if len(args) < 3:
     print "Usage: copydir.py [-n] <source SE> <destination SE> <LFN> [<LFN>...]"
-    print "       -n: dryRun (list files to be deleted)"
+    print "       -n: dryRun (list files to be copied)"
     print "Example: copydir.py -n UKI-SCOTGRID-ECDF1-disk UKI-LT2-IC-HEP-disk /lsst/test2"
     sys.exit(1)
 
@@ -111,7 +111,7 @@ def main():
   for opt, _ in opts:
     if opt == "-n":
       dry_run = True
-      print "dryRun only: list files to be deleted"
+      print "dryRun only: list files to be copied"
 
   copyme = RecursiveCp()
 
