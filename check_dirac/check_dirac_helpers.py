@@ -50,12 +50,53 @@ def complex_run(cmd, warn_run=False, shell=False):
 def check_prerequisites():
   """ Checks prerequisites for check_dirac script 
   """
-  # I'll probably add some more later
+  # Check 1: Is there a usercert ?
   for key_name in ("USERCERT", "USERKEY"):
     key_path = PARAMETERS[key_name]
     if not os.access(key_path, os.R_OK):
       print "ERROR: Can't access the %s at %s." % (key_name, key_path)
       print "This should be accessible by the current user."
       sys.exit(0)
+ # Check 2: Is this SL6 or similar ?
+  if not os.path.isfile("/etc/redhat-release"):
+    print "Cannot find /etc/redhat-release."
+    print "Script needs EL6, please."
+    sys.exit(0)
+  else:
+    # But of course Simon's is better
+    if not ".el6." in os.uname()[2]:
+      print "This doesn't look like an EL6 node. This will probably NOT WORK."
+      print "Press <ENTER> if you're sure."
+      raw_input()
+    #I liked my version, pah
+    #relfile = open("/etc/redhat-release", "r")
+    #content = relfile.read()
+    #relstring = "release "
+    #start_loc = content.find(relstring)
+    #releaseversion = content[(start_loc + 8):(start_loc + 9)]
+    #try:
+    #  releaseversion =  int(releaseversion)
+    #except ValueError:
+    #  print "Cannot determine release version."
+    #if releaseversion != 6 :
+    #  print "This does not seem to be an EL6 machine."
+    #  print "Proceed at your own risk, but it will probably NOT WORK."
+
+
+  # Check 3: Cannot setup a new DIRAC UI on top of an old one
+  if "DIRAC" in os.environ:
+    print os.environ["DIRAC"]
+    print "You seem to have already have setup a DIRAC UI."
+    print "Please run this script in a clean shell."
+    print "Otherwise bad things(TM) might happen."
+    sys.exit(0)
+
+  # Check 4: Cannot setup a DIRAC UI on top of a grid UI either
+  if "GLITE_LOCATION" in os.environ:
+    print os.environ["GLITE_LOCATION"]
+    print "You seem to have already have setup a Grid UI."
+    print "Please run this script in a clean shell."
+    print "Otherwise bad things(TM) might happen."
+    sys.exit(0)
 
 

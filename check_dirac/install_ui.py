@@ -8,15 +8,17 @@ import random
 import getpass
 import datetime
 import time
-import getpass
 import pexpect
 from check_dirac_helpers import simple_run
 from subprocess import Popen, PIPE
 
 UI_PYTHON_VERSION = "27" 
 
-UI_VERSION = "v6r15p24"
-LCG_BINDINGS = "2016-11-03"
+#UI_VERSION = "v6r15p24"
+#LCG_BINDINGS = "2016-11-03"
+
+UI_VERSION = "v6r17p18"
+LCG_BINDINGS = "2017-01-27"
 
 # dirac-in-a-box puts these in a dictionary, let's go with that
 PARAMETERS={ "USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
@@ -27,6 +29,11 @@ PARAMETERS={ "USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
 def install_ui():
   # I'll need the proxy password later
   proxypasswd = getpass.getpass("Please enter your proxy password: ") 
+  if proxypasswd == "":
+    print "Password seems to be empty, that won't work."
+    sys.exit(0)
+  else: 
+    print "Read password of length %d" % (len(proxypasswd))  
 
   # make a new directory using date and time
   # I refuse to use seconds here ....
@@ -56,7 +63,8 @@ def install_ui():
   
 
   # retrieve install executable
-  wget_cmd = ["wget", "-np", "-O", "dirac-install", "http://lhcbproject.web.cern.ch/lhcbproject/dist/Dirac_project/dirac-install"]
+  # wget_cmd = ["wget", "-np", "-O", "dirac-install", "http://lhcbproject.web.cern.ch/lhcbproject/dist/Dirac_project/dirac-install"]
+  wget_cmd = ["wget", "-np", "-O", "dirac-install", "https://raw.githubusercontent.com/DIRACGrid/DIRAC/integration/Core/scripts/dirac-install.py"]
   simple_run(wget_cmd)
   os.chmod("dirac-install", 0744)
 
@@ -88,6 +96,7 @@ def install_ui():
   proxy_child = pexpect.spawn('dirac-proxy-init -x')
   proxy_child.expect ('password:')
   proxy_child.sendline (proxypasswd)
+  print(proxy_child.before)
 
   # configure UI
   configure_ui_cmd = ["dirac-configure", "-F", "-S", "GridPP", "-C", "dips://dirac01.grid.hep.ph.ic.ac.uk:9135/Configuration/Server", "-I"]
@@ -98,6 +107,10 @@ def install_ui():
   proxy_child = pexpect.spawn('dirac-proxy-init -g gridpp_user -M')
   proxy_child.expect ('password:')
   proxy_child.sendline (proxypasswd)
+  # try to give a hint of what is going on
+  print proxy_child.read()
+  # print(proxy_child.before)
+  
 
   # send a status message - I should probably check for errors along the way
   print "UI installed and configured."
