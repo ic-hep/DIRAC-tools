@@ -14,7 +14,7 @@ from subprocess import Popen, PIPE
 
 UI_PYTHON_VERSION = "27"
 
-UI_VERSION = "v6r17p14"
+UI_VERSION = "v6r17p18"
 LCG_BINDINGS = "2017-01-27"
 
 
@@ -49,6 +49,39 @@ def prerequisites():
   print 'c) You are a member of a VO supported by the dirac.gridpp.ac.uk instance of dirac.'
   print 'In case of problems, please email daniela.bauer@imperial.ac.uk'
 
+  # Vertrauen ist gut, Kontrolle ist besser
+  # Check 1: Is there a usercert ?
+  for key_name in ("USERCERT", "USERKEY"):
+    key_path = PARAMETERS[key_name]
+    if not os.access(key_path, os.R_OK):
+      print "ERROR: Can't access the %s at %s." % (key_name, key_path)
+      print "This should be accessible by the current user."
+      sys.exit(0)
+  # Check 2: Is this SL6 or similar ?
+  if not os.path.isfile("/etc/redhat-release"):
+    print "Cannot find /etc/redhat-release."
+    print "Script needs EL6, please."
+    sys.exit(0)
+  else:
+    if not ".el6." in os.uname()[2]:
+      print "This doesn't look like an EL6 node. This will probably NOT WORK."
+      print "Press <ENTER> if you're sure."
+      raw_input()
+  # Check 3: Cannot setup a new DIRAC UI on top of an old one
+  if "DIRAC" in os.environ:
+    print os.environ["DIRAC"]
+    print "You seem to have already have setup a DIRAC UI."
+    print "Please run this script in a clean shell."
+    print "Otherwise bad things(TM) might happen."
+    sys.exit(0)
+
+  # Check 4: Cannot setup a DIRAC UI on top of a grid UI either
+  if "GLITE_LOCATION" in os.environ:
+    print os.environ["GLITE_LOCATION"]
+    print "You seem to have already have setup a Grid UI."
+    print "Please run this script in a clean shell."
+    print "Otherwise bad things(TM) might happen."
+    sys.exit(0)
 
 
 def install_ui():
@@ -102,7 +135,7 @@ def install_ui():
   
 
   # retrieve install executable
-  wget_cmd = ["wget", "-np", "-O", "dirac-install", "http://lhcbproject.web.cern.ch/lhcbproject/dist/Dirac_project/dirac-install"]
+  wget_cmd = ["wget", "-np", "-O", "dirac-install", "https://raw.githubusercontent.com/DIRACGrid/DIRAC/integration/Core/scripts/dirac-install.py"]
   simple_run(wget_cmd)
   os.chmod("dirac-install", 0744)
 
