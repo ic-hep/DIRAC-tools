@@ -1,21 +1,18 @@
 #!/usr/bin/python
-
+"""
+Helper functions for the dirac test module.
+Nothing to see here.
+"""
 import os
 import sys
 import shutil
 import string
-import random
-import getpass
-import datetime
-import time
-import getpass
-import pexpect
 from subprocess import Popen, PIPE
 
 # dirac-in-a-box puts these in a dictionary, let's go with that
-PARAMETERS={ "USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
-             "USERKEY": os.path.expanduser("~/.globus/userkey.pem"),
-             }
+PARAMETERS = { "USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
+               "USERKEY": os.path.expanduser("~/.globus/userkey.pem"),
+               }
 
 
 # blatantly stolen from Simon
@@ -49,6 +46,7 @@ def complex_run(cmd, warn_run=False, shell=False):
 
 def check_prerequisites():
   """ Checks prerequisites for check_dirac script 
+  (e.g. usercert and release version)
   """
   # Check 1: Is there a usercert ?
   for key_name in ("USERCERT", "USERKEY"):

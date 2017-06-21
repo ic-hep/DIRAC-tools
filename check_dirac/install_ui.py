@@ -1,10 +1,9 @@
 #!/usr/bin/python
-
+"""
+installs and configures a fresh DIRAC UI
+"""
 import os
 import sys
-import shutil
-import string
-import random
 import getpass
 import datetime
 import time
@@ -21,12 +20,24 @@ UI_VERSION = "v6r17p18"
 LCG_BINDINGS = "2017-01-27"
 
 # dirac-in-a-box puts these in a dictionary, let's go with that
-PARAMETERS={ "USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
-             "USERKEY": os.path.expanduser("~/.globus/userkey.pem"),
-             }
+PARAMETERS = { "USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
+               "USERKEY": os.path.expanduser("~/.globus/userkey.pem"),
+               }
 
 
 def install_ui():
+  """
+  installs and configures a fresh DIRAC UI (VO specific)
+  """
+  # pick which VO I want to test, default gridpp
+  print "Which VO do you want to test (default: gridpp) ?"
+  user_VO = raw_input("Your choices are: gridpp, lz, lsst, solidexperiment.org: ") \
+      or "gridpp"
+  if user_VO not in ["gridpp", "lz", "lsst", "solidexperiment.org"]:
+    print "Testing for %s VO is not supported." % user_VO
+    sys.exit(0)
+
+
   # I'll need the proxy password later
   proxypasswd = getpass.getpass("Please enter your proxy password: ") 
   if proxypasswd == "":
@@ -38,6 +49,7 @@ def install_ui():
   # make a new directory using date and time
   # I refuse to use seconds here ....
   dirac_test_dir = datetime.datetime.now().strftime("%Y_%b_%d_%H%M")
+  dirac_test_dir =  dirac_test_dir+'_'+str(user_VO) 
   
   # this should only happen if program was quit in anger
   # the main purpose of this function is to annoy Simon :-)
@@ -51,7 +63,7 @@ def install_ui():
     dirac_test_dir = datetime.datetime.now().strftime("%Y_%b_%d_%H%M")
 
 
-  print 'Creating test dir: %s' % dirac_test_dir 
+  print '\nCreating test dir: %s' % dirac_test_dir 
   os.mkdir(dirac_test_dir)
   os.chdir(dirac_test_dir)
   # log the ui versions used in a convenient place
@@ -63,8 +75,8 @@ def install_ui():
   
 
   # retrieve install executable
-  # wget_cmd = ["wget", "-np", "-O", "dirac-install", "http://lhcbproject.web.cern.ch/lhcbproject/dist/Dirac_project/dirac-install"]
-  wget_cmd = ["wget", "-np", "-O", "dirac-install", "https://raw.githubusercontent.com/DIRACGrid/DIRAC/integration/Core/scripts/dirac-install.py"]
+  wget_cmd = ["wget", "-np", "-O", "dirac-install", 
+              "https://raw.githubusercontent.com/DIRACGrid/DIRAC/integration/Core/scripts/dirac-install.py"]
   simple_run(wget_cmd)
   os.chmod("dirac-install", 0744)
 
@@ -72,15 +84,16 @@ def install_ui():
   install_command_string = pwd + "/dirac-install" # needs full path
 
   # install UI
-  inst_cmd =  [install_command_string, "-r", UI_VERSION , "-i", UI_PYTHON_VERSION, "-g", LCG_BINDINGS]
+  inst_cmd =  [install_command_string, "-r", UI_VERSION , 
+               "-i", UI_PYTHON_VERSION, "-g", LCG_BINDINGS]
   simple_run(inst_cmd) 
 
 
   # from Simon
   # We have to "source" the bashrc now.
   # This is a bit of a hassle to do as we're in python not bash.
-  # There are some pickle tricks to do this, but python changes on source bashrc.
-  # We'll do it the slightly more tedious way:
+  # There are some pickle tricks to do this, 
+  # but python changes on source bashrc.
   source_cmd = [ "/bin/bash", "-c", "source bashrc && env -0" ]
   proc = Popen(source_cmd, stdout=PIPE)
   vars_out, _ = proc.communicate()
@@ -99,22 +112,27 @@ def install_ui():
   print(proxy_child.before)
 
   # configure UI
-  configure_ui_cmd = ["dirac-configure", "-F", "-S", "GridPP", "-C", "dips://dirac01.grid.hep.ph.ic.ac.uk:9135/Configuration/Server", "-I"]
+  # sorry pylint, no shortcuts
+  configure_ui_cmd = ["dirac-configure", "-F", "-S", "GridPP", 
+                      "-C", "dips://dirac01.grid.hep.ph.ic.ac.uk:9135/Configuration/Server", "-I"]
 
   simple_run(configure_ui_cmd)
 
-  # now all should be well, so make a gridpp VO proxy
-  proxy_child = pexpect.spawn('dirac-proxy-init -g gridpp_user -M')
+  # now all should be well, so make a %s VO proxy
+  make_proxy_string = 'dirac-proxy-init -g %s_user -M' % user_VO
+  # print  make_proxy_string
+  proxy_child = pexpect.spawn(make_proxy_string)
+  # proxy_child = pexpect.spawn('dirac-proxy-init -g gridpp_user -M')
   proxy_child.expect ('password:')
   proxy_child.sendline (proxypasswd)
   # try to give a hint of what is going on
   print proxy_child.read()
-  # print(proxy_child.before)
-  
 
   # send a status message - I should probably check for errors along the way
   print "UI installed and configured."
   print "Current proxy is: " 
   
   simple_run(["dirac-proxy-info"])
-
+  
+  # needed elsewhere
+  return user_VO

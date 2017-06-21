@@ -1,25 +1,25 @@
 #!/usr/bin/python
-
+"""
+generates the JDL and .sh files needed for the test
+"""
 import os
 import sys
-import string
 import re
-from check_dirac_helpers import simple_run
 from check_dirac_helpers import complex_run
 
 
-JDLTEXT="""[
-Executable = "gridpp.sh";
+JDLTEXT = """[
+Executable = "diractest.sh";
 StdOutput = "job.log";
 StdError = "job.log";
-InputSandbox = "gridpp.sh";
+InputSandbox = "diractest.sh";
 OutputSandbox = "job.log";
 Site = "%s";
 JobName = "DiracTest";
 ]
 """
 
-SHFILETEXT=r"""#!/bin/bash 
+SHFILETEXT = r"""#!/bin/bash 
 date 
 pwd 
 sleep 2
@@ -50,17 +50,16 @@ fi
 perl -e '$z=time()+(2*60); while (time()<$z) { $j++; $j *= 1.1 for (1..9999); }'
 
 echo -e "\n"
-echo -e "Any dirac stuff available ?"
-dirac-dms-show-se-status
-
+echo -e "Any dirac stuff available (dirac-version, dirac-admin-get-site-mask) ?"
+dirac-version
 dirac-admin-get-site-mask
 
 echo -e "\n"
-echo -e "Downloading testfile (gridpptestfile.txt)"
-dirac-dms-get-file /gridpp/user/dbauer/gridpptestfile.txt
-cksum gridpptestfile.txt
+echo -e "Downloading testfile (dirac01.testfile.txt)"
+dirac-dms-get-file /%(VO)s/user/dirac01.test/dirac01.testfile.txt
+cksum dirac01.testfile.txt
 # ideally this should be automated with some exit code (maybe later...)
-echo -e "Expected: 2240404671 105 gridpptestfile.txt \n" 
+echo -e "Expected: 2240404671 105 dirac01.testfile.txt \n" 
 
 echo -e "Creating a file, uploading it to gfe02"
 MYDATE=`date +%%s`
@@ -70,37 +69,37 @@ if [ -z "${DIRACSITE}" ]; then
 fi
 env > testfile.${MYDATE}.${DIRACSITE}.txt
 echo "File to be uploaded: " testfile.${MYDATE}.${DIRACSITE}.txt
-dirac-dms-add-file -ddd /gridpp/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt testfile.${MYDATE}.${DIRACSITE}.txt UKI-LT2-IC-HEP-disk
+dirac-dms-add-file -ddd /%(VO)s/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt testfile.${MYDATE}.${DIRACSITE}.txt UKI-LT2-IC-HEP-disk
 sleep 3
 echo -e "\n"
 echo "Testing dirac-dms-lfn-replicas command"
-dirac-dms-lfn-replicas -ddd /gridpp/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt
+dirac-dms-lfn-replicas -ddd /%(VO)s/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt
 sleep 3
 echo -e "\n" 
 echo "Removing file"
-dirac-dms-remove-files /gridpp/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt
+dirac-dms-remove-files /%(VO)s/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt
 sleep 3
 
 echo -e "\nI am done here."
 
 """
 
-REPANDREGTEXT=r"""#!/bin/bash
+REPANDREGTEXT = r"""#!/bin/bash
 echo "Testing the dirac-dms-replicate-and-register-request command"
 MYDATE=`date +%%s`
 env > repregtest.${MYDATE}.txt
 echo "File to be uploaded: " repregtest.${MYDATE}.txt
-dirac-dms-add-file /gridpp/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt repregtest.${MYDATE}.txt UKI-LT2-IC-HEP-disk
-dirac-dms-replicate-and-register-request ddrarr_${MYDATE}  /gridpp/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt UKI-LT2-QMUL2-disk
+dirac-dms-add-file /%(VO)s/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt repregtest.${MYDATE}.txt UKI-LT2-IC-HEP-disk
+dirac-dms-replicate-and-register-request ddrarr_${MYDATE}  /%(VO)s/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt %(TARGETSE)s
 echo "Sleeping 120 s to give replicate request a chance to finish."
 sleep 120
 echo -e "\n" 
 echo "For reference the request name can be found in rep_and_reg_requests.txt"
-echo "ddrarr_${MYDATE} /gridpp/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt" >> rep_and_reg_requests.txt
+echo "ddrarr_${MYDATE} /%(VO)s/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt" >> rep_and_reg_requests.txt
 dirac-rms-show-request ddrarr_${MYDATE}
 
 echo -e "\nPlease remeber to delete the file if transfer was sucess full or cancel the request if it wasn't:"
-echo -e "dirac-dms-remove-files /gridpp/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt" 
+echo -e "dirac-dms-remove-files /%(VO)s/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt" 
 echo -e "dirac-rms-cancel-request ddrarr_${MYDATE}"
 
 echo -e "\nThe dirac-dms-replicate-and-register-request test script ends here."
@@ -108,7 +107,10 @@ echo -e "\nThe dirac-dms-replicate-and-register-request test script ends here."
 """
 
 
-def make_jdls(sites_to_check):
+def make_jdls(user_VO, sites_to_check):
+  """
+  generates the JDL and .sh files needed for the test
+  """
 
   for site in sites_to_check:
     # jdl file name = sitename.jdl
@@ -122,7 +124,12 @@ def make_jdls(sites_to_check):
       ic_jdl = open("LCG.UKI-LT2-IC-HEP.uk.jdl", "r")
       contents = ic_jdl.readlines()
       ic_jdl.close()
-      contents.insert(6, "InputData = {\"/gridpp/user/dbauer/gridpptestfile.txt\"};\n")
+      # VO specific input data
+      inputdatastring = "InputData = {\"/%s/user/dirac01.test/dirac01.testfile.txt\"};\n" % user_VO
+      print inputdatastring
+      contents.insert(6, inputdatastring)
+      
+
       ic_jdl = open("LCG.UKI-LT2-IC-HEP.uk.jdl", "w")
       contents = "".join(contents)
       ic_jdl.write(contents)
@@ -142,15 +149,24 @@ def make_jdls(sites_to_check):
 
 
   dirac_username = match.group(1)
-  diracinfo = {"DIRACUSERNAME":dirac_username}                        
+  # files for solidexperiment.org can only be replicated to and from Belgium
+  targetse = "UKI-LT2-QMUL2-disk"
+  if user_VO == "solidexperiment.org":
+    targetse = "BEgrid-ULB-VUB-disk"
+  diracinfo = {"DIRACUSERNAME":dirac_username, "VO":user_VO, "TARGETSE":targetse}  
 
   # while I am at it, also make the .sh file
-  grippshfile = open("gridpp.sh", 'w')
-  grippshfile.write(SHFILETEXT %diracinfo)
-  os.chmod("gridpp.sh", 0744)
+  diractestshfile = open("diractest.sh", 'w')
+  diractestshfile.write(SHFILETEXT %diracinfo)
+  os.chmod("diractest.sh", 0744)
   
 
   # file to test replicate and register command 
   diracrepandregfile = open("repandreg.sh", "w")
   diracrepandregfile.write(REPANDREGTEXT %diracinfo)
   os.chmod("repandreg.sh", 0744)
+
+
+# for testing, where's travis when you need it
+# make_jdls("lsst", ["LCG.UKI-LT2-IC-HEP.uk", "LCG.UKI-LT2-QMUL.uk"])
+
