@@ -16,7 +16,7 @@ UI_PYTHON_VERSION = "27"
 #UI_VERSION = "v6r15p24"
 #LCG_BINDINGS = "2016-11-03"
 
-UI_VERSION = "v6r17p18"
+UI_VERSION = "v6r17p20"
 LCG_BINDINGS = "2017-01-27"
 
 # dirac-in-a-box puts these in a dictionary, let's go with that

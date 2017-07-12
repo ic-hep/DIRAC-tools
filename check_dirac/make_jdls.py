@@ -96,7 +96,7 @@ sleep 120
 echo -e "\n" 
 echo "For reference the request name can be found in rep_and_reg_requests.txt"
 echo "ddrarr_${MYDATE} /%(VO)s/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt" >> rep_and_reg_requests.txt
-dirac-rms-show-request ddrarr_${MYDATE}
+%(SHOWCMD)s ddrarr_${MYDATE}
 
 echo -e "\nPlease remeber to delete the file if transfer was sucess full or cancel the request if it wasn't:"
 echo -e "dirac-dms-remove-files /%(VO)s/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt" 
@@ -126,7 +126,7 @@ def make_jdls(user_VO, sites_to_check):
       ic_jdl.close()
       # VO specific input data
       inputdatastring = "InputData = {\"/%s/user/dirac01.test/dirac01.testfile.txt\"};\n" % user_VO
-      print inputdatastring
+      # print inputdatastring
       contents.insert(6, inputdatastring)
       
 
@@ -153,7 +153,15 @@ def make_jdls(user_VO, sites_to_check):
   targetse = "UKI-LT2-QMUL2-disk"
   if user_VO == "solidexperiment.org":
     targetse = "BEgrid-ULB-VUB-disk"
-  diracinfo = {"DIRACUSERNAME":dirac_username, "VO":user_VO, "TARGETSE":targetse}  
+  diracinfo = {}
+  
+  # v6r18 uses dirac-rms-request [requestname] instead of dirac-rms-show-request [requestname]
+  from install_ui import UI_VERSION
+  if int(UI_VERSION[3:5]) == 17:
+    diracinfo = {"DIRACUSERNAME":dirac_username, "VO":user_VO, "TARGETSE":targetse, "SHOWCMD":"dirac-rms-show-request"}
+  else:
+    diracinfo = {"DIRACUSERNAME":dirac_username, "VO":user_VO, "TARGETSE":targetse, "SHOWCMD":"dirac-rms-request"}
+
 
   # while I am at it, also make the .sh file
   diractestshfile = open("diractest.sh", 'w')
