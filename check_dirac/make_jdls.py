@@ -55,7 +55,7 @@ dirac-version
 dirac-admin-get-site-mask
 
 echo -e "\n"
-echo -e "Downloading testfile (dirac01.testfile.txt)"
+echo -e "Downloading testfile (/%(VO)s/user/dirac01.test/dirac01.testfile.txt)"
 dirac-dms-get-file /%(VO)s/user/dirac01.test/dirac01.testfile.txt
 cksum dirac01.testfile.txt
 # ideally this should be automated with some exit code (maybe later...)
@@ -136,31 +136,24 @@ def make_jdls(user_VO, sites_to_check):
       ic_jdl.close()
 
 
+  # this has moved to install_ui.install_ui()    
   proxycrap = complex_run(["dirac-proxy-info"])
-              
+  # at this point, the proxy has already been verified
+  # so proxycrap should always be OK, but still do basic check
   match = re.search(r'username\s+:\s+(.+)', proxycrap)
   if not match:
-    print 'Cannot determine dirac user name. Something has gone terribly wrong.'
+    print 'It should have never come that far.'
     sys.exit(0)
-
-  if proxycrap.find("VOMS fqan") < 0:
-    print 'This proxy does not seem to contain a VOMS fqan, must stop.'
-    sys.exit(0)
-
-
   dirac_username = match.group(1)
+
   # files for solidexperiment.org can only be replicated to and from Belgium
   targetse = "UKI-LT2-QMUL2-disk"
   if user_VO == "solidexperiment.org":
     targetse = "BEgrid-ULB-VUB-disk"
   diracinfo = {}
-  
-  # v6r18 uses dirac-rms-request [requestname] instead of dirac-rms-show-request [requestname]
-  from install_ui import UI_VERSION
-  if int(UI_VERSION[3:5]) == 17:
-    diracinfo = {"DIRACUSERNAME":dirac_username, "VO":user_VO, "TARGETSE":targetse, "SHOWCMD":"dirac-rms-show-request"}
-  else:
-    diracinfo = {"DIRACUSERNAME":dirac_username, "VO":user_VO, "TARGETSE":targetse, "SHOWCMD":"dirac-rms-request"}
+
+  # there used to be an if here...
+  diracinfo = {"DIRACUSERNAME":dirac_username, "VO":user_VO, "TARGETSE":targetse, "SHOWCMD":"dirac-rms-request"}
 
 
   # while I am at it, also make the .sh file

@@ -8,7 +8,8 @@ import getpass
 import datetime
 import time
 import pexpect
-from check_dirac_helpers import simple_run
+import re
+from check_dirac_helpers import simple_run, complex_run
 from subprocess import Popen, PIPE
 
 UI_PYTHON_VERSION = "27" 
@@ -16,7 +17,7 @@ UI_PYTHON_VERSION = "27"
 #UI_VERSION = "v6r15p24"
 #LCG_BINDINGS = "2016-11-03"
 
-UI_VERSION = "v6r17p20"
+UI_VERSION = "v6r17p27"
 LCG_BINDINGS = "2017-01-27"
 
 # dirac-in-a-box puts these in a dictionary, let's go with that
@@ -127,6 +128,26 @@ def install_ui():
   proxy_child.sendline (proxypasswd)
   # try to give a hint of what is going on
   print proxy_child.read()
+
+  # check if it's a voms-proxy and if it's not, try again. Once.
+  proxycheck = complex_run(["dirac-proxy-info"])
+              
+  match = re.search(r'username\s+:\s+(.+)', proxycheck)
+  if not match:
+    print 'Cannot determine dirac user name. Something has gone terribly wrong.'
+    sys.exit(0)
+
+  if proxycheck.find("VOMS fqan") < 0:
+    print 'This proxy does not seem to contain a VOMS fqan, try again. Once'
+    time.sleep(3)
+    proxy_child = pexpect.spawn(make_proxy_string)
+    proxy_child.expect ('password:')
+    proxy_child.sendline (proxypasswd)
+
+  proxycheck2 = complex_run(["dirac-proxy-info"])
+  if proxycheck2.find("VOMS fqan") < 0:
+    print 'This proxy still does not seem to contain a VOMS fqan. Giving up.'
+    sys.exit(0)
 
   # send a status message - I should probably check for errors along the way
   print "UI installed and configured."
