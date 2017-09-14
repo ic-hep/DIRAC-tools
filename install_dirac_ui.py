@@ -14,7 +14,7 @@ from subprocess import Popen, PIPE
 
 UI_PYTHON_VERSION = "27"
 
-UI_VERSION = "v6r17p18"
+UI_VERSION = "v6r17p28"
 LCG_BINDINGS = "2017-01-27"
 
 
