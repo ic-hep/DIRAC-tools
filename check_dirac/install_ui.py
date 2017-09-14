@@ -107,7 +107,7 @@ def install_ui():
     os.environ[var_name] = var_value
 
   # Make a generic proxy to be able to download the config files  
-  proxy_child = pexpect.spawn('dirac-proxy-init -x')
+  proxy_child = pexpect.spawn('dirac-proxy-init -r -x')
   proxy_child.expect ('password:')
   proxy_child.sendline (proxypasswd)
   print(proxy_child.before)
@@ -120,10 +120,9 @@ def install_ui():
   simple_run(configure_ui_cmd)
 
   # now all should be well, so make a %s VO proxy
-  make_proxy_string = 'dirac-proxy-init -g %s_user -M' % user_VO
+  make_proxy_string = 'dirac-proxy-init -r -g %s_user -M' % user_VO
   # print  make_proxy_string
   proxy_child = pexpect.spawn(make_proxy_string)
-  # proxy_child = pexpect.spawn('dirac-proxy-init -g gridpp_user -M')
   proxy_child.expect ('password:')
   proxy_child.sendline (proxypasswd)
   # try to give a hint of what is going on
