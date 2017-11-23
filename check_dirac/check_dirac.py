@@ -54,6 +54,13 @@ for site in SITES_TO_CHECK:
   print site
   sub_cmd = ["dirac-wms-job-submit", "-f", "jobs.log", jdlfile]
   install_ui.simple_run(sub_cmd)
+  if site == "LCG.UKI-LT2-IC-HEP.uk" and user_VO == "gridpp":
+    print "Submitting multicore job for %s VO to %s" %(user_VO, site) 
+    sub_cmd = ["dirac-wms-job-submit", "-f", 
+               "jobs.log", "LCG.UKI-LT2-IC-HEP.multi.uk.jdl"]
+    install_ui.simple_run(sub_cmd)
+
+
 
 
 print '\nTo check on the status of the test jobs, please do:'

@@ -23,13 +23,19 @@ SHFILETEXT = r"""#!/bin/bash
 date 
 pwd 
 sleep 2
-echo -e "\n Checking the environment \n"
+echo -e "\nChecking the environment \n"
 ghostname=`hostname --long 2>&1` 
 gipname=`hostname --ip-address 2>&1` 
 echo $ghostname "has address" $gipname
 uname -a
 cat /etc/redhat-release
 env | sort
+
+# make a summary later
+TESTDOWNLOAD="Failed: Please check log for errors."
+TESTUPLOAD="Failed: Please check log for errors."
+TESTREMOVE="Failed: Please check log for errors."
+TESTLISTLFN="Failed: Please check log for errors."
 
 echo -e " \n ================================== \n"
 
@@ -43,6 +49,7 @@ if [ "$ISITVAC" == "VAC" ]; then
   echo "This is a VAC site"
   echo "Listing content of \$DIRACROOT/etc/dirac.cfg"
   cat ${DIRACROOT}/etc/dirac.cfg
+  echo -e "==========\n"
 fi
 
 
@@ -60,6 +67,13 @@ dirac-dms-get-file /%(VO)s/user/dirac01.test/dirac01.testfile.txt
 cksum dirac01.testfile.txt
 # ideally this should be automated with some exit code (maybe later...)
 echo -e "Expected: 2240404671 105 dirac01.testfile.txt \n" 
+TESTCHKSUM=`cksum dirac01.testfile.txt | awk {'print $1'}`
+if [ $TESTCHKSUM == 2240404671 ]; then
+    TESTDOWNLOAD="Success"
+else 
+    echo "Unexpected checksum found: ${TESTCHKSUM}"
+fi
+
 
 echo -e "Creating a file, uploading it to gfe02"
 MYDATE=`date +%%s`
@@ -69,23 +83,54 @@ if [ -z "${DIRACSITE}" ]; then
 fi
 env > testfile.${MYDATE}.${DIRACSITE}.txt
 echo "File to be uploaded: " testfile.${MYDATE}.${DIRACSITE}.txt
-dirac-dms-add-file -ddd /%(VO)s/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt testfile.${MYDATE}.${DIRACSITE}.txt UKI-LT2-IC-HEP-disk
+dirac-dms-add-file -ddd /%(VO)s/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt testfile.${MYDATE}.${DIRACSITE}.txt UKI-LT2-IC-HEP-disk 2>&1 | tee dmsaddlog.${MYDATE}.txt
+# prepare summary
+if [ $? == 0 ];then 
+    ISITGOOD=`grep "Successfully uploaded file to" dmsaddlog.${MYDATE}.txt | wc -l`
+    echo $ISITGOOD
+    if [ $ISITGOOD == 1 ];then
+	TESTUPLOAD="Success"
+    fi
+fi
+
 sleep 3
 echo -e "\n"
 echo "Testing dirac-dms-lfn-replicas command"
-dirac-dms-lfn-replicas -ddd /%(VO)s/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt
+dirac-dms-lfn-replicas -ddd /%(VO)s/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt 2>&1 | tee dmslfnrep.${MYDATE}.txt 
+
+if [ $? == 0 ];then 
+    ISITGOOD=`grep "'Failed': {}}}" dmslfnrep.${MYDATE}.txt | wc -l`
+    if [ $ISITGOOD == 1 ];then
+	TESTLISTLFN="Success"
+    fi
+fi
+
 sleep 3
 echo -e "\n" 
 echo "Removing file"
-dirac-dms-remove-files /%(VO)s/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt
+dirac-dms-remove-files /%(VO)s/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt 2>&1 | tee dmsremove.${MYDATE}.txt
+if [ $? == 0 ];then 
+    ISITGOOD=`grep "Successfully removed" dmsremove.${MYDATE}.txt | wc -l`
+    if [ $ISITGOOD == 1 ];then
+	TESTREMOVE="Success"
+    fi
+fi
+
 sleep 3
+
+echo -e "\nSummary:\n"
+echo ${DIRACSITE}
+echo "File download: ${TESTDOWNLOAD}"
+echo "File upload: ${TESTUPLOAD}"
+echo "List LFN: ${TESTLISTLFN}"
+echo "File remove: ${TESTREMOVE}"
 
 echo -e "\nI am done here."
 
 """
 
 REPANDREGTEXT = r"""#!/bin/bash
-echo "Testing the dirac-dms-replicate-and-register-request command"
+echo -e "\nTesting the dirac-dms-replicate-and-register-request command"
 MYDATE=`date +%%s`
 env > repregtest.${MYDATE}.txt
 echo "File to be uploaded: " repregtest.${MYDATE}.txt
@@ -121,6 +166,7 @@ def make_jdls(user_VO, sites_to_check):
     # after previous problems, make sure the InputData 
     # syntax still works (use Imperial only)
     if site == "LCG.UKI-LT2-IC-HEP.uk":
+      # generates a JDL with an InputData requirement
       ic_jdl = open("LCG.UKI-LT2-IC-HEP.uk.jdl", "r")
       contents = ic_jdl.readlines()
       ic_jdl.close()
@@ -134,6 +180,20 @@ def make_jdls(user_VO, sites_to_check):
       contents = "".join(contents)
       ic_jdl.write(contents)
       ic_jdl.close()
+      
+      # generates a JDL with a multi processor requirement 
+      # (replaces InputData requirement)
+      ic_jdl = open("LCG.UKI-LT2-IC-HEP.uk.jdl", "r")
+      contents = ic_jdl.readlines()
+      ic_jdl.close()
+      
+      contents.remove('InputData = {"/gridpp/user/dirac01.test/dirac01.testfile.txt"};\n')
+      multiprocessorstring = "Tags = {\"8Processors\"};\n"
+      contents.insert(6, multiprocessorstring)
+      multi_jdl = open("LCG.UKI-LT2-IC-HEP.multi.uk.jdl", "w")
+      contents = "".join(contents)
+      multi_jdl.write(contents)
+      multi_jdl.close()
 
 
   # this has moved to install_ui.install_ui()    

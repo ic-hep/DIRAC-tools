@@ -17,8 +17,8 @@ UI_PYTHON_VERSION = "27"
 #UI_VERSION = "v6r15p24"
 #LCG_BINDINGS = "2016-11-03"
 
-UI_VERSION = "v6r17p27"
-LCG_BINDINGS = "2017-01-27"
+UI_VERSION = "v6r19p7"
+LCG_BINDINGS = "v13r0"
 
 # dirac-in-a-box puts these in a dictionary, let's go with that
 PARAMETERS = { "USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
@@ -123,6 +123,7 @@ def install_ui():
   make_proxy_string = 'dirac-proxy-init -r -g %s_user -M' % user_VO
   # print  make_proxy_string
   proxy_child = pexpect.spawn(make_proxy_string)
+  # proxy_child = pexpect.spawn('dirac-proxy-init -g gridpp_user -M')
   proxy_child.expect ('password:')
   proxy_child.sendline (proxypasswd)
   # try to give a hint of what is going on
