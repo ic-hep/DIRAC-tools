@@ -18,6 +18,7 @@ def list_dir(cntxt, dir_name, fd, depth=0):
  
   subdirs = []
   n_of_tries = 0
+  thing = None
   while n_of_tries < 3:  
     try:
       content = cntxt.listdir(dir_name)
@@ -32,9 +33,9 @@ def list_dir(cntxt, dir_name, fd, depth=0):
           filesum = cntxt.checksum(fullpath, "adler32")
           process_file(fullpath, filesize, filesum, fd)
       break
-    except:
+    except Exception as e:
       n_of_tries += 1
-      print "Failed to process %s" %dir_name 
+      print "Failed to process %s (%s), file: %s" %(dir_name, e, thing)   
   for d in subdirs:
     list_dir(cntxt, d, fd, depth=depth+1)
 
