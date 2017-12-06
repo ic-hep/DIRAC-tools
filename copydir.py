@@ -9,10 +9,14 @@ Script.initialize()
 import sys
 import os
 import getopt
+from time import sleep
 
 from DIRAC.Core.DISET.RPCClient import RPCClient
 from DIRAC.DataManagementSystem.Client.DataManager import DataManager
 from DIRAC.Core.Security.ProxyInfo import getProxyInfo
+from DIRAC import gLogger
+gLogger.setLevel( "INFO" )
+gLogger.showHeaders( False )
 
 
 class RecursiveCp(object):
@@ -21,6 +25,7 @@ class RecursiveCp(object):
     self.__dm = DataManager()
     self.__n_files = 0
     self.__space_copied = 0L
+    self.__badfiles = set()
 
   def search_directory(self, directory_path, source_se, dest_se, dry_run=True):
     """
@@ -70,10 +75,20 @@ class RecursiveCp(object):
     if (source_se in ses) and (not dest_se in ses):
       print "%s" % filename
       if not dry_run:
-        res = self.__dm. replicateAndRegister(filename, dest_se, source_se)
+        res = self.__dm.replicateAndRegister(filename, dest_se, source_se)
         if not res['OK']:
           print "Replicate and register failed for: %s" % filename
           print res
+          sleep(5)
+          print "Trying again to register %s" %filename
+          gLogger.setLevel( "DEBUG" )
+          gLogger.showHeaders( True )
+          res = self.__dm.replicateAndRegister(filename, dest_se, source_se)
+          gLogger.setLevel( "INFO" )
+          gLogger.showHeaders( False )
+          if not res['OK']:
+            print "Replicate and register failed again for: %s" % filename
+            self.__badfiles.add(filename)
           return False
       return True
 
@@ -87,7 +102,11 @@ class RecursiveCp(object):
     print "Number of files copied: %s" % self.__n_files
     space = self.__space_copied/(1024.0 * 1024.0 * 1024.0)
     print "Data copied: %0.3f GB" % space
-
+    print "Number of failed copies: %s" %len(self.__badfiles)
+    f=open("badfiles.txt", "w")
+    f.write('\n'.join(self.__badfiles))
+    f.write('\n')
+    f.close()
  
 def main():
   """ put it all together """
