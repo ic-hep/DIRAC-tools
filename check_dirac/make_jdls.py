@@ -68,12 +68,13 @@ cksum dirac01.testfile.txt
 # ideally this should be automated with some exit code (maybe later...)
 echo -e "Expected: 2240404671 105 dirac01.testfile.txt \n" 
 TESTCHKSUM=`cksum dirac01.testfile.txt | awk {'print $1'}`
-if [ $TESTCHKSUM == 2240404671 ]; then
-    TESTDOWNLOAD="Success"
-else 
-    echo "Unexpected checksum found: ${TESTCHKSUM}"
+if [ ! -z ${TESTCHKSUM} ]; then 
+    if [ $TESTCHKSUM == 2240404671 ]; then
+        TESTDOWNLOAD="Success"
+    else 
+        echo "Unexpected checksum found: ${TESTCHKSUM}"
+    fi
 fi
-
 
 echo -e "Creating a file, uploading it to gfe02"
 MYDATE=`date +%%s`
