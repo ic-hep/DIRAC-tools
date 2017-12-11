@@ -120,6 +120,9 @@ sleep 3
 
 echo -e "\nSummary:\n"
 echo ${DIRACSITE}
+if [ ${DIRACSITE} == "LCG.UKI-LT2-IC-HEP.uk" ];then
+     echo "NSLOTS=${NSLOTS}"
+fi
 echo "File download: ${TESTDOWNLOAD}"
 echo "File upload: ${TESTUPLOAD}"
 echo "List LFN: ${TESTLISTLFN}"
