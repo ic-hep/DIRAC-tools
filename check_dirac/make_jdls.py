@@ -19,13 +19,13 @@ JobName = "DiracTest";
 ]
 """
 
-SHFILETEXT = r"""#!/bin/bash 
-date 
-pwd 
+SHFILETEXT = r"""#!/bin/bash
+date
+pwd
 sleep 2
 echo -e "\nChecking the environment \n"
-ghostname=`hostname --long 2>&1` 
-gipname=`hostname --ip-address 2>&1` 
+ghostname=`hostname --long 2>&1`
+gipname=`hostname --ip-address 2>&1`
 echo $ghostname "has address" $gipname
 uname -a
 cat /etc/redhat-release
@@ -199,8 +199,20 @@ def make_jdls(user_VO, sites_to_check):
       multi_jdl.write(contents)
       multi_jdl.close()
 
+    # test the HighMem queue at RALPP (should run at heplnv147)
+    if site == "LCG.UKI-SOUTHGRID-RALPP.uk":
+      ralpp_jdl = open("LCG.UKI-SOUTHGRID-RALPP.uk.jdl", "r")
+      contents = ralpp_jdl.readlines()
+      ralpp_jdl.close()
+      # Add a tag
+      highmemtag = "Tags = {\"HighMem\"};\n"
+      print highmemtag
+      contents.insert(6, highmemtag)
+      ralpp_jdl = open("LCG.UKI-SOUTHGRID-RALPP.uk.jdl", "w")
+      contents = "".join(contents)
+      ralpp_jdl.write(contents)
+      ralpp_jdl.close()
 
-  # this has moved to install_ui.install_ui()    
   proxycrap = complex_run(["dirac-proxy-info"])
   # at this point, the proxy has already been verified
   # so proxycrap should always be OK, but still do basic check

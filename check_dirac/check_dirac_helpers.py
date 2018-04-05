@@ -55,15 +55,16 @@ def check_prerequisites():
       print "ERROR: Can't access the %s at %s." % (key_name, key_path)
       print "This should be accessible by the current user."
       sys.exit(0)
- # Check 2: Is this SL6 or similar ?
+
+ # Check 2: Is this SL6 or SL7 similar ?
   if not os.path.isfile("/etc/redhat-release"):
     print "Cannot find /etc/redhat-release."
-    print "Script needs EL6, please."
+    print "Script needs EL6 or EL7, please."
     sys.exit(0)
   else:
     # But of course Simon's is better
-    if not ".el6." in os.uname()[2]:
-      print "This doesn't look like an EL6 node. This will probably NOT WORK."
+    if not ".el6." in os.uname()[2] and not  ".el7." in os.uname()[2]:
+      print "This doesn't look like an EL6 or EL7 node. This will probably NOT WORK."
       print "Press <ENTER> if you're sure."
       raw_input()
     #I liked my version, pah

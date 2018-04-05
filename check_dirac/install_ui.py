@@ -7,23 +7,24 @@ import sys
 import getpass
 import datetime
 import time
-import pexpect
 import re
+# apparently obsolete, haven't found a replacement yet
+import platform
+import pexpect
 from check_dirac_helpers import simple_run, complex_run
 from subprocess import Popen, PIPE
 
-UI_PYTHON_VERSION = "27" 
+UI_PYTHON_VERSION = "27"
 
 #UI_VERSION = "v6r15p24"
 #LCG_BINDINGS = "2016-11-03"
 
-UI_VERSION = "v6r19p7"
-LCG_BINDINGS = "v13r0"
+UI_VERSION = "v6r19p16"
+LCG_BINDINGS = "v14r0"
 
 # dirac-in-a-box puts these in a dictionary, let's go with that
-PARAMETERS = { "USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
-               "USERKEY": os.path.expanduser("~/.globus/userkey.pem"),
-               }
+PARAMETERS = {"USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
+              "USERKEY": os.path.expanduser("~/.globus/userkey.pem"),}
 
 
 def install_ui():
@@ -38,20 +39,25 @@ def install_ui():
     print "Testing for %s VO is not supported." % user_VO
     sys.exit(0)
 
-
   # I'll need the proxy password later
-  proxypasswd = getpass.getpass("Please enter your proxy password: ") 
+  proxypasswd = getpass.getpass("Please enter your proxy password: ")
   if proxypasswd == "":
     print "Password seems to be empty, that won't work."
     sys.exit(0)
-  else: 
-    print "Read password of length %d" % (len(proxypasswd))  
+  else:
+    print "Read password of length %d" % (len(proxypasswd))
 
   # make a new directory using date and time
   # I refuse to use seconds here ....
   dirac_test_dir = datetime.datetime.now().strftime("%Y_%b_%d_%H%M")
-  dirac_test_dir =  dirac_test_dir+'_'+str(user_VO) 
-  
+  dirac_test_dir = dirac_test_dir + '_' + str(user_VO)
+  el = platform.linux_distribution()[1].split('.')[0]
+  if (int(el) not in [6, 7]):
+    print "This does not look lile EL6 or EL7, here be dragons (HBD ;-)"
+    dirac_test_dir = dirac_test_dir+'_HBD'
+  else:
+    dirac_test_dir = dirac_test_dir+'_EL'+ str(el)
+
   # this should only happen if program was quit in anger
   # the main purpose of this function is to annoy Simon :-)
   if os.path.exists(dirac_test_dir):
@@ -64,7 +70,7 @@ def install_ui():
     dirac_test_dir = datetime.datetime.now().strftime("%Y_%b_%d_%H%M")
 
 
-  print '\nCreating test dir: %s' % dirac_test_dir 
+  print '\nCreating test dir: %s' % dirac_test_dir
   os.mkdir(dirac_test_dir)
   os.chdir(dirac_test_dir)
   # log the ui versions used in a convenient place
@@ -73,10 +79,10 @@ def install_ui():
   uiverfile.write('UI_PYTHON_VERSION: '+UI_PYTHON_VERSION+'\n')
   uiverfile.write('LCG_BINDINGS: '+LCG_BINDINGS+'\n')
   uiverfile.close()
-  
+
 
   # retrieve install executable
-  wget_cmd = ["wget", "-np", "-O", "dirac-install", 
+  wget_cmd = ["wget", "-np", "-O", "dirac-install",
               "https://raw.githubusercontent.com/DIRACGrid/DIRAC/integration/Core/scripts/dirac-install.py"]
   simple_run(wget_cmd)
   os.chmod("dirac-install", 0744)
@@ -85,15 +91,14 @@ def install_ui():
   install_command_string = pwd + "/dirac-install" # needs full path
 
   # install UI
-  inst_cmd =  [install_command_string, "-r", UI_VERSION , 
-               "-i", UI_PYTHON_VERSION, "-g", LCG_BINDINGS]
-  simple_run(inst_cmd) 
-
+  inst_cmd = [install_command_string, "-r", UI_VERSION,
+              "-i", UI_PYTHON_VERSION, "-g", LCG_BINDINGS]
+  simple_run(inst_cmd)
 
   # from Simon
   # We have to "source" the bashrc now.
   # This is a bit of a hassle to do as we're in python not bash.
-  # There are some pickle tricks to do this, 
+  # There are some pickle tricks to do this,
   # but python changes on source bashrc.
   source_cmd = [ "/bin/bash", "-c", "source bashrc && env -0" ]
   proc = Popen(source_cmd, stdout=PIPE)
@@ -106,17 +111,16 @@ def install_ui():
     var_name, _, var_value = var.partition("=")
     os.environ[var_name] = var_value
 
-  # Make a generic proxy to be able to download the config files  
+  # Make a generic proxy to be able to download the config files
   proxy_child = pexpect.spawn('dirac-proxy-init -r -x')
-  proxy_child.expect ('password:')
-  proxy_child.sendline (proxypasswd)
+  proxy_child.expect('password:')
+  proxy_child.sendline(proxypasswd)
   print(proxy_child.before)
 
   # configure UI
   # sorry pylint, no shortcuts
-  configure_ui_cmd = ["dirac-configure", "-F", "-S", "GridPP", 
+  configure_ui_cmd = ["dirac-configure", "-F", "-S", "GridPP",
                       "-C", "dips://dirac01.grid.hep.ph.ic.ac.uk:9135/Configuration/Server", "-I"]
-
   simple_run(configure_ui_cmd)
 
   # now all should be well, so make a %s VO proxy
@@ -124,14 +128,14 @@ def install_ui():
   # print  make_proxy_string
   proxy_child = pexpect.spawn(make_proxy_string)
   # proxy_child = pexpect.spawn('dirac-proxy-init -g gridpp_user -M')
-  proxy_child.expect ('password:')
-  proxy_child.sendline (proxypasswd)
+  proxy_child.expect('password:')
+  proxy_child.sendline(proxypasswd)
   # try to give a hint of what is going on
   print proxy_child.read()
 
   # check if it's a voms-proxy and if it's not, try again. Once.
   proxycheck = complex_run(["dirac-proxy-info"])
-              
+
   match = re.search(r'username\s+:\s+(.+)', proxycheck)
   if not match:
     print 'Cannot determine dirac user name. Something has gone terribly wrong.'
@@ -141,8 +145,8 @@ def install_ui():
     print 'This proxy does not seem to contain a VOMS fqan, try again. Once'
     time.sleep(3)
     proxy_child = pexpect.spawn(make_proxy_string)
-    proxy_child.expect ('password:')
-    proxy_child.sendline (proxypasswd)
+    proxy_child.expect('password:')
+    proxy_child.sendline(proxypasswd)
 
   proxycheck2 = complex_run(["dirac-proxy-info"])
   if proxycheck2.find("VOMS fqan") < 0:
@@ -151,9 +155,9 @@ def install_ui():
 
   # send a status message - I should probably check for errors along the way
   print "UI installed and configured."
-  print "Current proxy is: " 
+  print "Current proxy is: "
   
   simple_run(["dirac-proxy-info"])
-  
+
   # needed elsewhere
   return user_VO
