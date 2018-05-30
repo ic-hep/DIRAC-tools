@@ -16,6 +16,7 @@ InputSandbox = "diractest.sh";
 OutputSandbox = "job.log";
 Site = "%s";
 JobName = "DiracTest";
+Platform = "AnyPlatform";
 ]
 """
 
@@ -167,7 +168,7 @@ def make_jdls(user_VO, sites_to_check):
     jdlfile = open(filename, 'w')
     jdlfile.write(JDLTEXT % (site))
     jdlfile.close() # needed ?
-    # after previous problems, make sure the InputData 
+    # after previous problems, make sure the InputData
     # syntax still works (use Imperial only)
     if site == "LCG.UKI-LT2-IC-HEP.uk":
       # generates a JDL with an InputData requirement
@@ -178,20 +179,19 @@ def make_jdls(user_VO, sites_to_check):
       inputdatastring = "InputData = {\"/%s/user/dirac01.test/dirac01.testfile.txt\"};\n" % user_VO
       # print inputdatastring
       contents.insert(6, inputdatastring)
-      
 
       ic_jdl = open("LCG.UKI-LT2-IC-HEP.uk.jdl", "w")
       contents = "".join(contents)
       ic_jdl.write(contents)
       ic_jdl.close()
       
-      # generates a JDL with a multi processor requirement 
+      # generates a JDL with a multi processor requirement
       # (replaces InputData requirement)
       ic_jdl = open("LCG.UKI-LT2-IC-HEP.uk.jdl", "r")
       contents = ic_jdl.readlines()
       ic_jdl.close()
-      
-      contents.remove('InputData = {"/gridpp/user/dirac01.test/dirac01.testfile.txt"};\n')
+
+      contents.remove(inputdatastring)
       multiprocessorstring = "Tags = {\"8Processors\"};\n"
       contents.insert(6, multiprocessorstring)
       multi_jdl = open("LCG.UKI-LT2-IC-HEP.multi.uk.jdl", "w")
@@ -199,7 +199,7 @@ def make_jdls(user_VO, sites_to_check):
       multi_jdl.write(contents)
       multi_jdl.close()
 
-    # test the HighMem queue at RALPP (should run at heplnv147)
+    # test the HighMem queue at RALPP (should run at heplnx207)
     if site == "LCG.UKI-SOUTHGRID-RALPP.uk":
       ralpp_jdl = open("LCG.UKI-SOUTHGRID-RALPP.uk.jdl", "r")
       contents = ralpp_jdl.readlines()

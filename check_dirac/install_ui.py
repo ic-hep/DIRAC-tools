@@ -20,7 +20,7 @@ UI_PYTHON_VERSION = "27"
 #LCG_BINDINGS = "2016-11-03"
 
 UI_VERSION = "v6r19p16"
-LCG_BINDINGS = "v14r0"
+LCG_BINDINGS = "v13r0"
 
 # dirac-in-a-box puts these in a dictionary, let's go with that
 PARAMETERS = {"USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
@@ -33,9 +33,9 @@ def install_ui():
   """
   # pick which VO I want to test, default gridpp
   print "Which VO do you want to test (default: gridpp) ?"
-  user_VO = raw_input("Your choices are: gridpp, lz, lsst, solidexperiment.org: ") \
+  user_VO = raw_input("Your choices are: gridpp, lz, lsst, solidexperiment.org, skatelescope.eu: ") \
       or "gridpp"
-  if user_VO not in ["gridpp", "lz", "lsst", "solidexperiment.org"]:
+  if user_VO not in ["gridpp", "lz", "lsst", "solidexperiment.org", "skatelescope.eu"]:
     print "Testing for %s VO is not supported." % user_VO
     sys.exit(0)
 
