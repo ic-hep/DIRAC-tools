@@ -65,7 +65,7 @@ class RecursiveRm(object):
   
     if not subdirs and not files:
       if not dry_run:
-        self.__dm.fc.removeDirectory(directory_path, recursive=False)
+        self.__dm.fileCatalog.removeDirectory(directory_path, recursive=False)
       return True
 
     return False

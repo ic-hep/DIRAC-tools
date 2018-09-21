@@ -7,6 +7,7 @@ import os
 import sys
 import shutil
 import string
+import re
 from subprocess import Popen, PIPE
 
 # dirac-in-a-box puts these in a dictionary, let's go with that
@@ -99,3 +100,12 @@ def check_prerequisites():
     sys.exit(0)
 
 
+def extract_externals_version(logfile):
+  externals_version = "Unknown"
+  with open('install.log') as ff:
+    for line in ff:
+      res = re.search(r"Externals", line)
+      if res:
+        words = line.split(' ')
+        externals_version = words[10]
+  return externals_version
