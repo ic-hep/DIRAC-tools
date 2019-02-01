@@ -150,7 +150,7 @@ echo "ddrarr_${MYDATE} /%(VO)s/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt" 
 
 echo -e "\nPlease remeber to delete the file if transfer was sucess full or cancel the request if it wasn't:"
 echo -e "dirac-dms-remove-files /%(VO)s/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt" 
-echo -e "dirac-rms-cancel-request ddrarr_${MYDATE}"
+echo -e "dirac-rms-request --Cancel ddrarr_${MYDATE}"
 
 echo -e "\nThe dirac-dms-replicate-and-register-request test script ends here."
 
@@ -198,6 +198,23 @@ def make_jdls(user_VO, sites_to_check):
       contents = "".join(contents)
       multi_jdl.write(contents)
       multi_jdl.close()
+
+      # generates a JDL with an EL7 requirement
+      ic_jdl = open("LCG.UKI-LT2-IC-HEP.uk.jdl", "r")
+      contents = ic_jdl.readlines()
+      ic_jdl.close()
+      
+      contents.remove(inputdatastring)
+      anyPlatformString = 'Platform = "AnyPlatform";\n'
+      contents.remove(anyPlatformString)
+      el7string = "Platform = \"EL7\";\n"
+      contents.insert(6, el7string)
+      el7_jdl = open("LCG.UKI-LT2-IC-HEP.el7.uk.jdl", "w")
+      contents = "".join(contents)
+      el7_jdl.write(contents)
+      el7_jdl.close()
+
+
 
     # test the HighMem queue at RALPP (should run at heplnx207)
     if site == "LCG.UKI-SOUTHGRID-RALPP.uk":

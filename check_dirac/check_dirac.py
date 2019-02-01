@@ -21,7 +21,8 @@ SITES_TO_CHECK = ["LCG.UKI-LT2-IC-HEP.uk",
                   "LCG.UKI-SOUTHGRID-RALPP.uk",
                   "LCG.RAL-LCG2.uk",
                   "VAC.UKI-NORTHGRID-MAN-HEP.uk",
-                  "VAC.UKI-NORTHGRID-LIV-HEP.uk"
+                  "VAC.UKI-NORTHGRID-LIV-HEP.uk",
+                  "LCG.UKI-LT2-Brunel.uk"
                  ]
 
 # solidexperiment.org is currently hardcoded to be
@@ -64,6 +65,12 @@ for site in SITES_TO_CHECK:
     sub_cmd = ["dirac-wms-job-submit", "-f",
                "jobs.log", "LCG.UKI-LT2-IC-HEP.multi.uk.jdl"]
     install_ui.simple_run(sub_cmd)
+  if site == "LCG.UKI-LT2-IC-HEP.uk" and user_VO in ["gridpp", "lz"]:
+    print "Submitting EL7 job for %s VO to %s" %(user_VO, site)
+    sub_cmd = ["dirac-wms-job-submit", "-f",
+               "jobs.log", "LCG.UKI-LT2-IC-HEP.el7.uk.jdl"]
+    install_ui.simple_run(sub_cmd)
+
 
 
 

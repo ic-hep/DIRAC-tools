@@ -17,7 +17,7 @@ from subprocess import Popen, PIPE
 
 UI_PYTHON_VERSION = "27"
 
-UI_VERSION = "v6r20p9"
+UI_VERSION = "v6r20p26"
 LCG_BINDINGS = "v14r1"
 
 # dirac-in-a-box puts these in a dictionary, let's go with that
@@ -80,9 +80,10 @@ def install_ui():
 
 
   # retrieve install executable
-  wget_cmd = ["wget", "-np", "-O", "dirac-install",
+  wget_cmd = ["wget", "-np", "-O", "dirac-install", 
               "https://raw.githubusercontent.com/DIRACGrid/DIRAC/integration/Core/scripts/dirac-install.py"]
   simple_run(wget_cmd)
+
   os.chmod("dirac-install", 0744)
 
   pwd = os.getcwd()
