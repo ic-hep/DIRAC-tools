@@ -10,6 +10,7 @@ import os
 import check_dirac_helpers
 import install_ui
 import make_jdls
+import sys
 
 
 # according to pylint this has to be in SHOUTING
@@ -53,28 +54,44 @@ working_dir = os.getcwd()
 check_dirac_helpers.simple_run([os.path.join(working_dir, "diractest.sh")])
 check_dirac_helpers.simple_run([os.path.join(working_dir, "repandreg.sh")])
 
+# write job numbers corresponding to sites to a log file
+outfile_name = "%s/sites.log" %working_dir
+
+outfile = open(outfile_name, "wa")
 
 for site in SITES_TO_CHECK:
 
   jdlfile = site + ".jdl"
   print site
+  
   sub_cmd = ["dirac-wms-job-submit", "-f", "jobs.log", jdlfile]
-  install_ui.simple_run(sub_cmd)
+  command_log = install_ui.complex_run(sub_cmd)
+  if site != "LCG.UKI-SOUTHGRID-RALPP.uk":
+    outfile.write("Submitting standard job to %s\n" %site)
+  else: 
+    outfile.write("Submitting HighMem tag job to %s\n" %site)
+  check_dirac_helpers.jobid_to_file(command_log, outfile)
+
+
   if site == "LCG.UKI-LT2-IC-HEP.uk" and user_VO in ["gridpp", "skatelescope.eu"]:
     print "Submitting multicore job for %s VO to %s" %(user_VO, site)
+    outfile.write("Submitting multicore job for %s VO to %s\n" %(user_VO, site))
+
     sub_cmd = ["dirac-wms-job-submit", "-f",
                "jobs.log", "LCG.UKI-LT2-IC-HEP.multi.uk.jdl"]
-    install_ui.simple_run(sub_cmd)
+    command_log = install_ui.complex_run(sub_cmd)
+    check_dirac_helpers.jobid_to_file(command_log, outfile)
+
   if site == "LCG.UKI-LT2-IC-HEP.uk" and user_VO in ["gridpp", "lz"]:
     print "Submitting EL7 job for %s VO to %s" %(user_VO, site)
+    outfile.write("Submitting EL7 job for %s VO to %s\n" %(user_VO, site))
     sub_cmd = ["dirac-wms-job-submit", "-f",
                "jobs.log", "LCG.UKI-LT2-IC-HEP.el7.uk.jdl"]
-    install_ui.simple_run(sub_cmd)
+    command_log = install_ui.complex_run(sub_cmd)
+    check_dirac_helpers.jobid_to_file(command_log, outfile)
 
 
-
-
-
+outfile.close()
 print '\nTo check on the status of the test jobs, please do:'
 print 'cd '+ working_dir
 print 'source bashrc'

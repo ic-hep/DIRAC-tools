@@ -109,3 +109,14 @@ def extract_externals_version(logfile):
         words = line.split(' ')
         externals_version = words[10]
   return externals_version
+
+
+def jobid_to_file(command_log, outfile):
+  jobid_start = command_log.find("JobID =")
+  if jobid_start != -1:
+    outfile.write(command_log[jobid_start:])
+  else:
+    outfile.write("No job submitted!")
+    
+    outfile.write("\n")
+  
