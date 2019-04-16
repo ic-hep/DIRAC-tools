@@ -23,7 +23,7 @@ j.setExecutable('/bin/hostname')
 j.setExecutable('/bin/echo hello again')
 j.setName('API')
 
-result = dirac.submit(j)
+result = dirac.submitJob(j)
 print 'Submission Result: '
 pprint.pprint(result)
 
