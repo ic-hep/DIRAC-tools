@@ -34,7 +34,7 @@ def configure_and_submit(dirac, job, logfile):
   jobid = result['JobID']
 
   # print job id to file for future reference
-  joblog = open("jobid.log", "a")
+  joblog = open("api_jobid.log", "a")
   joblog.write(str(jobid)+'\n')
   joblog.close()
 
@@ -42,13 +42,13 @@ def configure_and_submit(dirac, job, logfile):
 
 def check_job(dirac, jobid, logfile):
   # to interactively check on job status do:
-  # dirac-wms-job-status -f jobid.log
+  # dirac-wms-job-status -f api_jobid.log
   logfile.write("\nThe current status of this job is:")
   pprint.pprint(dirac.getJobStatus(jobid), logfile)
 
 def check_all_jobs(dirac, logfile):
 
-  joblog = open("jobid.log", "r")
+  joblog = open("api_jobid.log", "r")
   # list comprehension :-D
   all_jobids = [jobid.strip() for jobid in joblog.readlines()]
 
@@ -66,7 +66,7 @@ def main():
   check_job(dirac, jobid, logfile)
   check_all_jobs(dirac, logfile)
   logfile.close()
-  print "Logs can be found in api.log and jobid.log."
+  print "API logs can be found in api.log and api_jobid.log."
 
 if __name__ == "__main__":
     main()
