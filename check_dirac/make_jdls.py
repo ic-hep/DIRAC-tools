@@ -25,6 +25,7 @@ date
 pwd
 sleep 2
 echo -e "\nChecking the environment \n"
+echo $DIRACSITE
 ghostname=`hostname --long 2>&1`
 gipname=`hostname --ip-address 2>&1`
 echo $ghostname "has address" $gipname
