@@ -32,7 +32,7 @@ def remove_catalog_entry(lfnpath, fc):
       fc.removeFile(lfnpath)
   else:
     # don't know what happened, just print to screen for now
-    print result
+    print dbentry_result
   return  
 
 def main():

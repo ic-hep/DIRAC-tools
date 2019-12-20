@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# source /vols/grid/ui/setup_cvmfs_ui.sh
+# source /vols/grid/ui/setup_ui.sh
 # needs a valid grid UI
 # voms-proxy-init --valid 24:00 --voms lz
 # e.g. ./listlz.py 20170402
@@ -9,6 +9,8 @@
 # srm:///gfe02.grid.hep.ph.ic.ac.uk
 #      /pnfs/hep.ph.ic.ac.uk/data/lz/[whateveryouspecify]
 # prints path, checksum (adler32) and size (bytes) to a file
+# example output:
+# srm://gfe02.grid.hep.ph.ic.ac.uk/pnfs/hep.ph.ic.ac.uk/data/lz/lz/data/MDC2/background/LZAP-3.12.0-PHYSICS-3.12.1/20170402/lz_2017040200_lzap.root 863a975b 3088029923
 
 import gfal2
 import os
