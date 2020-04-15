@@ -7,11 +7,9 @@ and register a file.
 """
 
 import os
-import check_dirac_helpers
 import install_ui
 import make_jdls
-import sys
-
+import check_dirac_helpers
 
 # according to pylint this has to be in SHOUTING
 SITES_TO_CHECK = ["LCG.UKI-LT2-IC-HEP.uk",
@@ -46,6 +44,13 @@ if user_VO == "skatelescope.eu":
   SITES_TO_CHECK = ["LCG.UKI-LT2-IC-HEP.uk", "LCG.UKI-NORTHGRID-MAN-HEP.uk",
                     "LCG.RAL-LCG2.uk", "LCG.SARA-MATRIX.nl"]
 
+# Cambridge currently only accepts gridpp via GridPP DIRAC
+if user_VO == "gridpp":
+  SITES_TO_CHECK.append("CLOUD.UK-CAM-CUMULUS-backfill.uk")
+
+if user_VO == "lz":
+  SITES_TO_CHECK.append("CLOUD.UKI-LT2-IC-HEP-lz.uk")
+
 make_jdls.make_jdls(user_VO, SITES_TO_CHECK)
 
 print os.getcwd()
@@ -57,36 +62,64 @@ check_dirac_helpers.simple_run([os.path.join(working_dir, "repandreg.sh")])
 # write job numbers corresponding to sites to a log file
 outfile_name = "%s/sites.log" %working_dir
 
-outfile = open(outfile_name, "wa")
+outfile = open(outfile_name, "a")
 
 for site in SITES_TO_CHECK:
 
   jdlfile = site + ".jdl"
   print site
-  
+
   sub_cmd = ["dirac-wms-job-submit", "-f", "jobs.log", jdlfile]
+  outfile.write("Submitting standard job to %s\n" %site)
   command_log = install_ui.complex_run(sub_cmd)
-  if site != "LCG.UKI-SOUTHGRID-RALPP.uk":
-    outfile.write("Submitting standard job to %s\n" %site)
-  else: 
-    outfile.write("Submitting HighMem tag job to %s\n" %site)
   check_dirac_helpers.jobid_to_file(command_log, outfile)
 
+  # now all the special cases (all these sites also receive a standard test job)
+  # all special cases run either at RALPP or Imperial
 
-  if site == "LCG.UKI-LT2-IC-HEP.uk" and user_VO in ["gridpp", "skatelescope.eu"]:
-    print "Submitting multicore job for %s VO to %s" %(user_VO, site)
-    outfile.write("Submitting multicore job for %s VO to %s\n" %(user_VO, site))
-
+  if site == "LCG.UKI-SOUTHGRID-RALPP.uk":
+    print "Submitting multicore job for %s VO to %s" % (user_VO, site)
+    outfile.write("Submitting multicore job for %s VO to %s\n" % (user_VO, site))
     sub_cmd = ["dirac-wms-job-submit", "-f",
-               "jobs.log", "LCG.UKI-LT2-IC-HEP.multi.uk.jdl"]
+               "jobs.log", "LCG.UKI-SOUTHGRID-RALPP.uk.multi.jdl"]
+    command_log = install_ui.complex_run(sub_cmd)
+    check_dirac_helpers.jobid_to_file(command_log, outfile)
+    
+    print "Submitting tag job for %s VO to %s" % (user_VO, site)
+    outfile.write("Submitting tag job for %s VO to %s\n" % (user_VO, site))
+    sub_cmd = ["dirac-wms-job-submit", "-f",
+               "jobs.log", "LCG.UKI-SOUTHGRID-RALPP.uk.tag.jdl"]
     command_log = install_ui.complex_run(sub_cmd)
     check_dirac_helpers.jobid_to_file(command_log, outfile)
 
-  if site == "LCG.UKI-LT2-IC-HEP.uk" and user_VO in ["gridpp", "lz"]:
-    print "Submitting EL7 job for %s VO to %s" %(user_VO, site)
-    outfile.write("Submitting EL7 job for %s VO to %s\n" %(user_VO, site))
+  if site == "LCG.UKI-LT2-IC-HEP.uk":
+    print "Submitting multicore job for %s VO to %s" % (user_VO, site)
+    outfile.write("Submitting multicore job for %s VO to %s\n" % (user_VO, site))
+
     sub_cmd = ["dirac-wms-job-submit", "-f",
-               "jobs.log", "LCG.UKI-LT2-IC-HEP.el7.uk.jdl"]
+               "jobs.log", "LCG.UKI-LT2-IC-HEP.uk.multi.jdl"]
+    command_log = install_ui.complex_run(sub_cmd)
+    check_dirac_helpers.jobid_to_file(command_log, outfile)
+
+    print "Submitting multicore job for %s VO to %s to HTCondorCE (ceprod00)" % (user_VO, site)
+    outfile.write("Submitting multicore job for %s VO to %s to HTCondorCE\n" % (user_VO, site))
+
+    sub_cmd = ["dirac-wms-job-submit", "-f",
+               "jobs.log", "LCG.UKI-LT2-IC-HEP.uk.multi.htcondor.jdl"]
+    command_log = install_ui.complex_run(sub_cmd)
+    check_dirac_helpers.jobid_to_file(command_log, outfile)
+
+    print "Submitting EL7 job for %s VO to %s" % (user_VO, site)
+    outfile.write("Submitting EL7 job for %s VO to %s\n" % (user_VO, site))
+    sub_cmd = ["dirac-wms-job-submit", "-f",
+               "jobs.log", "LCG.UKI-LT2-IC-HEP.uk.el7.jdl"]
+    command_log = install_ui.complex_run(sub_cmd)
+    check_dirac_helpers.jobid_to_file(command_log, outfile)
+    
+    print "Submitting job requiring InputData for %s VO to %s\n" % (user_VO, site)
+    outfile.write("Submitting job requiring InputData for %s VO to %s\n" % (user_VO, site))
+    sub_cmd = ["dirac-wms-job-submit", "-f",
+               "jobs.log", "LCG.UKI-LT2-IC-HEP.uk.inputdata.jdl"]
     command_log = install_ui.complex_run(sub_cmd)
     check_dirac_helpers.jobid_to_file(command_log, outfile)
 

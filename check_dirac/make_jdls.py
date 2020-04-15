@@ -15,8 +15,9 @@ StdError = "job.log";
 InputSandbox = "diractest.sh";
 OutputSandbox = "job.log";
 Site = "%s";
-JobName = "DiracTest";
-Platform = "AnyPlatform";
+JobName = "%s";
+Platform = "%s";
+%s
 ]
 """
 
@@ -123,8 +124,9 @@ sleep 3
 
 echo -e "\nSummary:\n"
 echo ${DIRACSITE}
-if [ ${DIRACSITE} == "LCG.UKI-LT2-IC-HEP.uk" ];then
+if [ ${DIRACSITE} == "LCG.UKI-LT2-IC-HEP.uk" || "LCG.UKI-SOUTHGRID-RALPP.uk" ];then
      echo "NSLOTS=${NSLOTS}"
+     echo "OMP_NUM_THREADS=${OMP_NUM_THREADS}"
 fi
 echo "File download: ${TESTDOWNLOAD}"
 echo "File upload: ${TESTUPLOAD}"
@@ -167,69 +169,61 @@ def make_jdls(user_VO, sites_to_check):
     # jdl file name = sitename.jdl
     filename = site + ".jdl"
     jdlfile = open(filename, 'w')
-    jdlfile.write(JDLTEXT % (site))
-    jdlfile.close() # needed ?
-    # after previous problems, make sure the InputData
-    # syntax still works (use Imperial only)
+    jobname = "DiracTest" # default
+    platform = "AnyPlatform" # default
+    special_requirement = '' #default
+    jdlfile.write(JDLTEXT % (site, jobname, platform, special_requirement))
+    jdlfile.close()
+
     if site == "LCG.UKI-LT2-IC-HEP.uk":
-      # generates a JDL with an InputData requirement
-      ic_jdl = open("LCG.UKI-LT2-IC-HEP.uk.jdl", "r")
-      contents = ic_jdl.readlines()
-      ic_jdl.close()
-      # VO specific input data
-      inputdatastring = "InputData = {\"/%s/user/dirac01.test/dirac01.testfile.txt\"};\n" % user_VO
-      # print inputdatastring
-      contents.insert(6, inputdatastring)
+      # there are three extra test cases for Imperial:
+      # 1) standard test, plus InputData requirement
+      filename = site + ".inputdata.jdl"
+      jdlfile_special = open(filename, 'w')
+      jobname = "DiracTestInputData"
+      special_requirement = "InputData = {\"/%s/user/dirac01.test/dirac01.testfile.txt\"};\n" % user_VO
+      jdlfile_special.write(JDLTEXT % (site, jobname, platform, special_requirement))
+      jdlfile_special.close()
+      # 2) standard test, plus multiprocessor (to be merged with 3 once we only have htcondor CEs)
+      filename = site + ".multi.jdl"
+      jdlfile_special = open(filename, 'w')
+      jobname = "DiracTestMulti"
+      special_requirement = "Tags = {\"8Processors\"};\n"
+      jdlfile_special.write(JDLTEXT % (site, jobname, platform, special_requirement))
+      jdlfile_special.close()
+      # 3) standard test, plus multiprocessor on htcondor CEs
+      filename = site + ".multi.htcondor.jdl"
+      jdlfile_special = open(filename, 'w')
+      jobname = "DiracTestMulti"
+      special_requirement = "Tags = {\"8Processors\"};\nGridCE = {\"ceprod00.grid.hep.ph.ic.ac.uk\"};\n"
+      jdlfile_special.write(JDLTEXT % (site, jobname, platform, special_requirement))
+      jdlfile_special.close()
+      # 4) check that setting the Platform does not break job submission/matching
+      filename = site + ".el7.jdl"
+      jdlfile_special = open(filename, 'w')
+      jobname = "DiracTestPlatform"
+      platform = "EL7"
+      special_requirement = ""
+      jdlfile_special.write(JDLTEXT % (site, jobname, platform, special_requirement))
+      jdlfile_special.close()
 
-      ic_jdl = open("LCG.UKI-LT2-IC-HEP.uk.jdl", "w")
-      contents = "".join(contents)
-      ic_jdl.write(contents)
-      ic_jdl.close()
-      
-      # generates a JDL with a multi processor requirement
-      # (replaces InputData requirement)
-      ic_jdl = open("LCG.UKI-LT2-IC-HEP.uk.jdl", "r")
-      contents = ic_jdl.readlines()
-      ic_jdl.close()
-
-      contents.remove(inputdatastring)
-      multiprocessorstring = "Tags = {\"8Processors\"};\n"
-      contents.insert(6, multiprocessorstring)
-      multi_jdl = open("LCG.UKI-LT2-IC-HEP.multi.uk.jdl", "w")
-      contents = "".join(contents)
-      multi_jdl.write(contents)
-      multi_jdl.close()
-
-      # generates a JDL with an EL7 requirement
-      ic_jdl = open("LCG.UKI-LT2-IC-HEP.uk.jdl", "r")
-      contents = ic_jdl.readlines()
-      ic_jdl.close()
-      
-      contents.remove(inputdatastring)
-      anyPlatformString = 'Platform = "AnyPlatform";\n'
-      contents.remove(anyPlatformString)
-      el7string = "Platform = \"EL7\";\n"
-      contents.insert(6, el7string)
-      el7_jdl = open("LCG.UKI-LT2-IC-HEP.el7.uk.jdl", "w")
-      contents = "".join(contents)
-      el7_jdl.write(contents)
-      el7_jdl.close()
-
-
-
-    # test the HighMem queue at RALPP (should run at heplnx207)
     if site == "LCG.UKI-SOUTHGRID-RALPP.uk":
-      ralpp_jdl = open("LCG.UKI-SOUTHGRID-RALPP.uk.jdl", "r")
-      contents = ralpp_jdl.readlines()
-      ralpp_jdl.close()
-      # Add a tag
-      highmemtag = "Tags = {\"HighMem\"};\n"
-      print highmemtag
-      contents.insert(6, highmemtag)
-      ralpp_jdl = open("LCG.UKI-SOUTHGRID-RALPP.uk.jdl", "w")
-      contents = "".join(contents)
-      ralpp_jdl.write(contents)
-      ralpp_jdl.close()
+      platform = "AnyPlatform"
+      # there are two extra test cases for RALPP
+      # 1) test the tagging mechanism: HighMem queue at RALPP (should run at heplnx207)
+      filename = site + ".tag.jdl"
+      jdlfile_special = open(filename, 'w')
+      jobname = "DiracTestTag"
+      special_requirement = "Tags = {\"HighMem\"};\n"
+      jdlfile_special.write(JDLTEXT % (site, jobname, platform, special_requirement))
+      jdlfile_special.close()
+      # 2) test multi-core on ARC
+      filename = site + ".multi.jdl"
+      jdlfile_special = open(filename, 'w')
+      jobname = "DiracTestMulti"
+      special_requirement = "Tags = {\"8Processors\"};\n"
+      jdlfile_special.write(JDLTEXT % (site, jobname, platform, special_requirement))
+      jdlfile_special.close()
 
   proxycrap = complex_run(["dirac-proxy-info"])
   # at this point, the proxy has already been verified

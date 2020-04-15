@@ -17,7 +17,7 @@ from subprocess import Popen, PIPE
 
 UI_PYTHON_VERSION = "27"
 
-UI_VERSION = "v6r22p6"
+UI_VERSION = "v6r22p26"
 LCG_BINDINGS = "v14r1"
 
 # dirac-in-a-box puts these in a dictionary, let's go with that
