@@ -111,6 +111,18 @@ def extract_externals_version(logfile):
   return externals_version
 
 
+def extract_diracos_version(logfile):
+  diracos_version = "Unknown"
+  with open('install.log') as ff:
+    for line in ff:
+      res = re.search(r"diracos.web.cern.ch/diracos/releases", line)
+      print line
+      if res:
+        # remove ".md5"                                                                                                                                                                                        
+        diracos_version = line[-10:-5]
+  return diracos_version
+
+
 def jobid_to_file(command_log, outfile):
   jobid_start = command_log.find("JobID =")
   if jobid_start != -1:

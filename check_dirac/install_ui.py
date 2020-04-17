@@ -13,12 +13,16 @@ import platform
 import pexpect
 from check_dirac_helpers import simple_run, complex_run
 from check_dirac_helpers import extract_externals_version
+from check_dirac_helpers import extract_diracos_version
 from subprocess import Popen, PIPE
 
 UI_PYTHON_VERSION = "27"
 
-UI_VERSION = "v6r22p26"
-LCG_BINDINGS = "v14r1"
+# UI_VERSION = "v6r22p26"
+# note that a v7r1 UI does not work against a v6r22 server
+UI_VERSION = "v7r0p20"
+# LCG_BINDINGS is ignored for any v7 version of DIRAC
+LCG_BINDINGS =  "v14r1"
 
 # dirac-in-a-box puts these in a dictionary, let's go with that
 PARAMETERS = {"USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
@@ -71,15 +75,8 @@ def install_ui():
   print '\nCreating test dir: %s' % dirac_test_dir
   os.mkdir(dirac_test_dir)
   os.chdir(dirac_test_dir)
-  # log the ui versions used in a convenient place
-  uiverfile = open('ui_versions.txt', 'w')
-  uiverfile.write('UI_VERSION: '+UI_VERSION+'\n')
-  uiverfile.write('UI_PYTHON_VERSION: '+UI_PYTHON_VERSION+'\n')
-  uiverfile.write('LCG_BINDINGS: '+LCG_BINDINGS+'\n')
-  uiverfile.close()
 
-
-  # retrieve install executable
+  # retrieve and install executable
   wget_cmd = ["wget", "-np", "-O", "dirac-install", 
               "https://raw.githubusercontent.com/DIRACGrid/DIRAC/integration/Core/scripts/dirac-install.py"]
   simple_run(wget_cmd)
@@ -93,12 +90,27 @@ def install_ui():
   # inst_cmd = [install_command_string, "-r", UI_VERSION,
   #            "-i", UI_PYTHON_VERSION, "-g", LCG_BINDINGS]
 
-  inst_cmd = "%s -r %s -i %s -g %s | tee install.log" %(install_command_string, UI_VERSION, UI_PYTHON_VERSION, LCG_BINDINGS)
+
+  if UI_VERSION[0:2] == "v6":
+    inst_cmd = "%s -r %s -i %s -g %s | tee install.log" %(install_command_string, UI_VERSION, UI_PYTHON_VERSION, LCG_BINDINGS)
+  else:
+    inst_cmd = "%s -r %s | tee install.log" %(install_command_string, UI_VERSION)
+
   
   simple_run(inst_cmd, shell=True) # to capture output
-  ext_version = extract_externals_version("install.log")
-  uiverfile = open('ui_versions.txt', 'a')
-  uiverfile.write(ext_version)
+  # log ui and related versions in a convenient place 
+  uiverfile = open('ui_versions.txt', 'w')
+  uiverfile.write('UI_VERSION: '+UI_VERSION+'\n')
+  uiverfile.write('UI_PYTHON_VERSION: '+UI_PYTHON_VERSION+'\n')
+  if UI_VERSION[0:2] == "v6":
+    uiverfile.write('LCG_BINDINGS: '+LCG_BINDINGS+'\n')
+    ext_version = extract_externals_version("install.log")
+    uiverfile = open('ui_versions.txt', 'a')
+    uiverfile.write(ext_version)
+  else:
+    diracos_version = extract_diracos_version("install.log")
+    uiverfile = open('ui_versions.txt', 'a')
+    uiverfile.write('DIRACOS: '+diracos_version+'\n')
   uiverfile.close()
 
 

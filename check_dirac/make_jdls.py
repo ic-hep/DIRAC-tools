@@ -124,7 +124,7 @@ sleep 3
 
 echo -e "\nSummary:\n"
 echo ${DIRACSITE}
-if [ ${DIRACSITE} == "LCG.UKI-LT2-IC-HEP.uk" || "LCG.UKI-SOUTHGRID-RALPP.uk" ];then
+if [ "${DIRACSITE}" == "LCG.UKI-LT2-IC-HEP.uk" ] || [ "${DIRACSITE}" == "LCG.UKI-SOUTHGRID-RALPP.uk" ];then
      echo "NSLOTS=${NSLOTS}"
      echo "OMP_NUM_THREADS=${OMP_NUM_THREADS}"
 fi
