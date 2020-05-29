@@ -1,0 +1,25 @@
+A collection of scripts written in response to user issues.
+Written on a best effort basis.
+Use at your own risk.
+No guarantees of any kind are given and/or implied.
+If you delete all your data by accident, we cannot get them back.
+
+We appreciate feedback.
+If you find a bug, please let us know.
+If you want to implement a new feature, please send us a pull request.
+
+
+* Register a file that is already on disk in the DIRAC file catalog:
+Note that this can only be done if the file is in a location where DIRAC compatible LFN can be generated.
+extract_file_data.py: Attempts to generate a list of filename - filesize - adler32checksum for a given directory. 
+		      This can then be used as input to register these files.
+
+
+
+
+* Example of job submission via the DIRAC Job API:
+hello_world_job.py
+job_with_more_options.py
+testapi.sh  
+Please see https://www.gridpp.ac.uk/wiki/Quick_Guide_to_Dirac#Advanced_job_management
+for further information.
