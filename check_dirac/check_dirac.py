@@ -128,10 +128,10 @@ outfile.close()
 
 # test API submission (currently basic implemetation only)
 wget_cmd_api = ["wget", "-np", "-O", "testapi.py",
-                "https://raw.githubusercontent.com/ic-hep/DIRAC-tools/master/job_with_more_options.py"]
+                "https://raw.githubusercontent.com/ic-hep/DIRAC-tools/master/user/job_with_more_options.py"]
 install_ui.simple_run(wget_cmd_api)
 os.chmod("testapi.py", 0744)
-wget_cmd_aux = ["wget", "-np", "https://raw.githubusercontent.com/ic-hep/DIRAC-tools/master/testapi.sh"]
+wget_cmd_aux = ["wget", "-np", "https://raw.githubusercontent.com/ic-hep/DIRAC-tools/master/user/testapi.sh"]
 install_ui.simple_run(wget_cmd_aux)
 sub_cmd_api = "./testapi.py"
 install_ui.simple_run(sub_cmd_api)
