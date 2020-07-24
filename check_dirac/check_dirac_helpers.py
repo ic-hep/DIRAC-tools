@@ -5,15 +5,14 @@ Nothing to see here.
 """
 import os
 import sys
-import shutil
-import string
+# import shutil
+# import string
 import re
 from subprocess import Popen, PIPE
 
 # dirac-in-a-box puts these in a dictionary, let's go with that
-PARAMETERS = { "USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
-               "USERKEY": os.path.expanduser("~/.globus/userkey.pem"),
-               }
+PARAMETERS = {"USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
+              "USERKEY": os.path.expanduser("~/.globus/userkey.pem"),}
 
 
 # blatantly stolen from Simon
@@ -42,11 +41,11 @@ def complex_run(cmd, warn_run=False, shell=False):
       print "NOTE: Processes may have been left running at this point."
     print "Full Cmd: %s" % str(cmd)
     sys.exit(0)
-  return allout  
+  return allout
 
 
 def check_prerequisites():
-  """ Checks prerequisites for check_dirac script 
+  """ Checks prerequisites for check_dirac script
   (e.g. usercert and release version)
   """
   # Check 1: Is there a usercert ?
@@ -115,11 +114,11 @@ def extract_diracos_version(logfile):
   diracos_version = "Unknown"
   with open('install.log') as ff:
     for line in ff:
-      res = re.search(r"diracos.web.cern.ch/diracos/releases", line)
-      print line
+      # res = re.search(r"diracos.web.cern.ch/diracos/releases", line)
+      res = re.search(r"Using CVMFS copy of diracos", line)
       if res:
-        # remove ".md5"                                                                                                                                                                                        
-        diracos_version = line[-10:-5]
+        print line
+        diracos_version = line[-13:-8]
   return diracos_version
 
 
@@ -129,6 +128,4 @@ def jobid_to_file(command_log, outfile):
     outfile.write(command_log[jobid_start:])
   else:
     outfile.write("No job submitted!")
-    
     outfile.write("\n")
-  

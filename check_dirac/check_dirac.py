@@ -20,7 +20,6 @@ SITES_TO_CHECK = ["LCG.UKI-LT2-IC-HEP.uk",
                   "LCG.UKI-SOUTHGRID-RALPP.uk",
                   "LCG.RAL-LCG2.uk",
                   "VAC.UKI-NORTHGRID-MAN-HEP.uk",
-                  "VAC.UKI-NORTHGRID-LIV-HEP.uk",
                   "LCG.UKI-LT2-Brunel.uk"
                  ]
 
