@@ -1,0 +1,4 @@
+#!/bin/bash
+
+export DCOMMANDS_PPID=$PPID
+exec /usr/bin/env python $DIRAC/DIRAC/WorkloadManagementSystem/scripts/kill_pilots.py "$@"
