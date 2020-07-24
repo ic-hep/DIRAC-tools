@@ -23,3 +23,6 @@ job_with_more_options.py
 testapi.sh  
 Please see https://www.gridpp.ac.uk/wiki/Quick_Guide_to_Dirac#Advanced_job_management
 for further information.
+
+WARNING: copydir.py and recursiverm.py are very old and will probably need updating.
+Pull requests welcome.
