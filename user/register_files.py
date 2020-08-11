@@ -208,7 +208,7 @@ def main():
   inputFile = open(args[0], "r")
   for line in inputFile:
     line = line.strip()
-    print("Looking at: %s\n" %line)
+    # print("Looking at: %s\n" %line)
     pfnpath, checksum, size = line.split(' ')
     if i%100 == 0:
       print(i, pfnpath, checksum, size)
