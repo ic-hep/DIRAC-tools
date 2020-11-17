@@ -84,8 +84,14 @@ def is_file_already_registered(dirac, lfn, se):
   result = dirac.getReplicas(lfn)
   # print(result)
   if not result['OK']:
-    print('ERROR determining status of %s: %s' %(lfn, result['Message']))
-    return 2
+    # this occasionally fails when the catalog is busy
+    print("Warning: getReplicas failed, sleeping 60 s and then trying one more time.")
+    from time import sleep
+    time.sleep(60)
+    result = dirac.getReplicas(lfn)
+    if not result['OK']:
+      print('ERROR determining status of %s: %s' %(lfn, result['Message']))
+      return 2
   # Possible outputs
   # {'OK': True, 'Value': {'Successful': {'/gridpp/user/daniela.bauer/repregtest.dirac00.1496070514.txt':
   #      {'UKI-LT2-IC-HEP-disk': '/gridpp/user/daniela.bauer/repregtest.dirac00.1496070514.txt',
@@ -158,10 +164,10 @@ def registerfile(pfnpath, checksum, size, vo, se, fc, dirac):
   # check if file is already registered
   is_reg = is_file_already_registered(dirac, lfnpath[1], se)
   if is_reg == 1:
-    print("File %s is already registered at %s" %(lfnpath, se))
+    # print("File %s is already registered at %s" %(str(lfnpath), se))
     return
   elif is_reg == 2:
-    print("Could not determine status of file %s" %(lfnpath))
+    print("Could not determine status of file %s" % str(lfnpath))
   else:
     result = fc.addFile(fileDict)
     if not result["OK"]:
@@ -201,14 +207,21 @@ def main():
     print("Sanity check turned off.\n")
 
 
-  # this is the heavy lifting
   dirac = Dirac()
+  # check if SE is accessible
+  if not dirac.checkSEAccess(options.se[0]):
+    print("Chosen SE  %s not accessible, please check SE name" %str(options.se[0]))
+    sys.exit(0)
+
+
+  # this is the heavy lifting
+  # dirac = Dirac()
   fc = FileCatalog()
   i = 0
   inputFile = open(args[0], "r")
   for line in inputFile:
     line = line.strip()
-    print("Looking at: %s\n" %line)
+    # print("Looking at: %s\n" %line)
     pfnpath, checksum, size = line.split(' ')
     if i%100 == 0:
       print(i, pfnpath, checksum, size)

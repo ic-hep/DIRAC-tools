@@ -37,12 +37,12 @@ joblog.close()
 # to interactively check on job status do:
 # dirac-wms-job-status -f jobid.log
 print "\nThe current status of this job is:"
-pprint.pprint(dirac.status(jobid))
+pprint.pprint(dirac.getJobStatus(jobid))
 
 joblog = open("jobid.log", "r")
 # list comprehension :-D
 all_jobids = [jobid.strip() for jobid in joblog.readlines()]
 
 print "\nThe current status of all jobs is:"
-all_status = dirac.status(all_jobids)
+all_status = dirac.getJobStatus(all_jobids)
 pprint.pprint(all_status)
