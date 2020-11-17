@@ -127,7 +127,7 @@ outfile.close()
 
 # test API submission (currently basic implemetation only)
 wget_cmd_api = ["wget", "-np", "-O", "testapi.py",
-                "https://raw.githubusercontent.com/ic-hep/DIRAC-tools/master/user/job_with_more_options.py"]
+                "https://raw.githubusercontent.com/ic-hep/DIRAC-tools/master/check_dirac/grid_and_cloud_api_test.py"]
 install_ui.simple_run(wget_cmd_api)
 os.chmod("testapi.py", 0744)
 wget_cmd_aux = ["wget", "-np", "https://raw.githubusercontent.com/ic-hep/DIRAC-tools/master/user/testapi.sh"]

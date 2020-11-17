@@ -10,6 +10,7 @@ from check_dirac_helpers import complex_run
 
 JDLTEXT = """[
 Executable = "diractest.sh";
+Arguments = "testarg1 testarg2";
 StdOutput = "job.log";
 StdError = "job.log";
 InputSandbox = "diractest.sh";
@@ -123,10 +124,11 @@ fi
 sleep 3
 
 echo -e "\nSummary:\n"
+echo "Arguments (testarg1, testarg2): $1, $2"
 echo ${DIRACSITE}
 if [ "${DIRACSITE}" == "LCG.UKI-LT2-IC-HEP.uk" ] || [ "${DIRACSITE}" == "LCG.UKI-SOUTHGRID-RALPP.uk" ];then
-     echo "NSLOTS=${NSLOTS}"
-     echo "OMP_NUM_THREADS=${OMP_NUM_THREADS}"
+     echo "Checking number of threads: NSLOTS=${NSLOTS}"
+     echo "Checking number of threads: OMP_NUM_THREADS=${OMP_NUM_THREADS}"
 fi
 echo "File download: ${TESTDOWNLOAD}"
 echo "File upload: ${TESTUPLOAD}"
