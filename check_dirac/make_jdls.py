@@ -124,6 +124,7 @@ fi
 sleep 3
 
 echo -e "\nSummary:\n"
+echo "All Arguments: $@"
 echo "Arguments (testarg1, testarg2): $1, $2"
 echo ${DIRACSITE}
 if [ "${DIRACSITE}" == "LCG.UKI-LT2-IC-HEP.uk" ] || [ "${DIRACSITE}" == "LCG.UKI-SOUTHGRID-RALPP.uk" ];then
