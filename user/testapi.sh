@@ -23,6 +23,7 @@ if [ $? == 0 ]; then
     echo -e "****"
 fi
 
+echo "All Arguments: $@"
 echo -e "Checking for input parameter"
 echo "Is it magic ?"
 echo $1
