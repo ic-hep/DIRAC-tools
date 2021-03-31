@@ -18,9 +18,8 @@ from subprocess import Popen, PIPE
 
 UI_PYTHON_VERSION = "27"
 
-# UI_VERSION = "v6r22p26"
+UI_VERSION = "v7r1p35"
 # note that a v7r1 UI does not work against a v6r22 server
-UI_VERSION = "v7r0p20"
 # LCG_BINDINGS is ignored for any v7 version of DIRAC
 LCG_BINDINGS =  "v14r1"
 
@@ -78,7 +77,7 @@ def install_ui():
 
   # retrieve and install executable
   wget_cmd = ["wget", "-np", "-O", "dirac-install", 
-              "https://raw.githubusercontent.com/DIRACGrid/DIRAC/integration/Core/scripts/dirac-install.py"]
+              "https://raw.githubusercontent.com/DIRACGrid/management/master/dirac-install.py"]
   simple_run(wget_cmd)
 
   os.chmod("dirac-install", 0744)
