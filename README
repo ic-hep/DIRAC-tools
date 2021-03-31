@@ -2,7 +2,7 @@ Tools for developing/debugging the dirac instance at
 https://dirac.gridpp.ac.uk
 
 Shorthand for Daniela:
-git clone https://github.com/ic-hep/DIRAC-tools
+git clone git@github.com:ic-hep/DIRAC-tools.git
 git add afile.py
 git commit -m "a comment"
 git remote set-url origin https://marianne013@github.com/ic-hep/DIRAC-tools
