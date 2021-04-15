@@ -1,8 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """
 Helper functions for the dirac test module.
 Nothing to see here.
 """
+from __future__ import print_function
 import os
 import sys
 # import shutil
@@ -23,10 +24,10 @@ def simple_run(cmd, warn_run=False, shell=False):
   proc = Popen(cmd, shell=shell)
   proc.wait()
   if proc.returncode:
-    print "ERROR: %s failed. Check output above." % cmd[0]
+    print("ERROR: %s failed. Check output above." % cmd[0])
     if warn_run:
-      print "NOTE: Processes may have been left running at this point."
-    print "Full Cmd: %s" % str(cmd)
+      print("NOTE: Processes may have been left running at this point.")
+    print("Full Cmd: %s" % str(cmd))
     sys.exit(0)
 
 def complex_run(cmd, warn_run=False, shell=False):
@@ -36,10 +37,10 @@ def complex_run(cmd, warn_run=False, shell=False):
   proc = Popen(cmd, shell=shell, stdout=PIPE, stderr=PIPE)
   allout, _ = proc.communicate() # returns tuple, ignores stderr
   if proc.returncode:
-    print "ERROR: %s failed. Check output above." % cmd[0]
+    print("ERROR: %s failed. Check output above." % cmd[0])
     if warn_run:
-      print "NOTE: Processes may have been left running at this point."
-    print "Full Cmd: %s" % str(cmd)
+      print("NOTE: Processes may have been left running at this point.")
+    print("Full Cmd: %s" % str(cmd))
     sys.exit(0)
   return allout
 
@@ -52,20 +53,20 @@ def check_prerequisites():
   for key_name in ("USERCERT", "USERKEY"):
     key_path = PARAMETERS[key_name]
     if not os.access(key_path, os.R_OK):
-      print "ERROR: Can't access the %s at %s." % (key_name, key_path)
-      print "This should be accessible by the current user."
+      print("ERROR: Can't access the %s at %s." % (key_name, key_path))
+      print("This should be accessible by the current user.")
       sys.exit(0)
 
  # Check 2: Is this SL6 or SL7 similar ?
   if not os.path.isfile("/etc/redhat-release"):
-    print "Cannot find /etc/redhat-release."
-    print "Script needs EL6 or EL7, please."
+    print("Cannot find /etc/redhat-release.")
+    print("Script needs EL6 or EL7, please.")
     sys.exit(0)
   else:
     # But of course Simon's is better
     if not ".el6." in os.uname()[2] and not  ".el7." in os.uname()[2]:
-      print "This doesn't look like an EL6 or EL7 node. This will probably NOT WORK."
-      print "Press <ENTER> if you're sure."
+      print("This doesn't look like an EL6 or EL7 node. This will probably NOT WORK.")
+      print("Press <ENTER> if you're sure.")
       raw_input()
     #I liked my version, pah
     #relfile = open("/etc/redhat-release", "r")
@@ -84,24 +85,25 @@ def check_prerequisites():
 
   # Check 3: Cannot setup a new DIRAC UI on top of an old one
   if "DIRAC" in os.environ:
-    print os.environ["DIRAC"]
-    print "You seem to have already have setup a DIRAC UI."
-    print "Please run this script in a clean shell."
-    print "Otherwise bad things(TM) might happen."
+    print(os.environ["DIRAC"])
+    print("You seem to have already have setup a DIRAC UI.")
+    print("Please run this script in a clean shell.")
+    print("Otherwise bad things(TM) might happen.")
     sys.exit(0)
 
   # Check 4: Cannot setup a DIRAC UI on top of a grid UI either
   if "GLITE_LOCATION" in os.environ:
-    print os.environ["GLITE_LOCATION"]
-    print "You seem to have already have setup a Grid UI."
-    print "Please run this script in a clean shell."
-    print "Otherwise bad things(TM) might happen."
+    print(os.environ["GLITE_LOCATION"])
+    print("You seem to have already have setup a Grid UI.")
+    print("Please run this script in a clean shell.")
+    print("Otherwise bad things(TM) might happen.")
     sys.exit(0)
 
 
 def extract_externals_version(logfile):
+  """for old releases that use dirac externals"""
   externals_version = "Unknown"
-  with open('install.log') as ff:
+  with open(logfile) as ff:
     for line in ff:
       res = re.search(r"Externals", line)
       if res:
@@ -111,18 +113,20 @@ def extract_externals_version(logfile):
 
 
 def extract_diracos_version(logfile):
+  """keep record of which diracos version was installed"""
   diracos_version = "Unknown"
-  with open('install.log') as ff:
+  with open(logfile) as ff:
     for line in ff:
       # res = re.search(r"diracos.web.cern.ch/diracos/releases", line)
       res = re.search(r"Using CVMFS copy of diracos", line)
       if res:
-        print line
+        print(line)
         diracos_version = line[-13:-8]
   return diracos_version
 
 
 def jobid_to_file(command_log, outfile):
+  """extract jobid and write to file"""
   jobid_start = command_log.find("JobID =")
   if jobid_start != -1:
     outfile.write(command_log[jobid_start:])

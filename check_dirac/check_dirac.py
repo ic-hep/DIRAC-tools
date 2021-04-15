@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """
 Main program for checking the status of dirac01.
 Installs a fresh UI and submits jobs to a variety of sites
 (CREAM, ARC) using the selected VO. Also tried to replicate
 and register a file.
 """
-
+from __future__ import print_function
 import os
 import install_ui
 import make_jdls
@@ -27,14 +27,14 @@ SITES_TO_CHECK = ["LCG.UKI-LT2-IC-HEP.uk",
 # ["LCG.UKI-LT2-IC-HEP.uk", "LCG.BEgrid.ULB-VUB.be"]
 # otherwise we are aiming for a good UK coverage
 
-print "Welcome to the basic dirac test script."
-print "Please make sure you are using an SL6/SL7 compatible machine."
-print "You will also need a valid user certificate in $HOME/.globus \n"
+print("Welcome to the basic dirac test script.")
+print("Please make sure you are using an SL7 compatible machine.")
+print("You will also need a valid user certificate in $HOME/.globus \n")
 
 check_dirac_helpers.check_prerequisites()
 
 # I refuse to have this in SHOUTING pylint be dammed
-user_VO = install_ui.install_ui()
+user_VO = install_ui.setup_ui()
 
 if user_VO == "solidexperiment.org":
   SITES_TO_CHECK = ["LCG.UKI-LT2-IC-HEP.uk", "LCG.BEgrid.ULB-VUB.be"]
@@ -52,10 +52,14 @@ if user_VO == "lz":
 
 make_jdls.make_jdls(user_VO, SITES_TO_CHECK)
 
-print os.getcwd()
+print(os.getcwd())
 
 working_dir = os.getcwd()
-check_dirac_helpers.simple_run([os.path.join(working_dir, "diractest.sh")])
+testscript = os.path.join(working_dir, "diractest.sh")
+# check_dirac_helpers.simple_run([os.path.join(working_dir, "diractest.sh")])
+test_submitted_script_cmd = [testscript, "testarg1", "testarg2"]
+check_dirac_helpers.complex_run(test_submitted_script_cmd)
+
 check_dirac_helpers.simple_run([os.path.join(working_dir, "repandreg.sh")])
 
 # write job numbers corresponding to sites to a log file
@@ -66,7 +70,7 @@ outfile = open(outfile_name, "a")
 for site in SITES_TO_CHECK:
 
   jdlfile = site + ".jdl"
-  print site
+  print(site)
 
   sub_cmd = ["dirac-wms-job-submit", "-f", "jobs.log", jdlfile]
   outfile.write("Submitting standard job to %s\n" %site)
@@ -77,14 +81,14 @@ for site in SITES_TO_CHECK:
   # all special cases run either at RALPP or Imperial
 
   if site == "LCG.UKI-SOUTHGRID-RALPP.uk":
-    print "Submitting multicore job for %s VO to %s" % (user_VO, site)
+    print("Submitting multicore job for %s VO to %s" % (user_VO, site))
     outfile.write("Submitting multicore job for %s VO to %s\n" % (user_VO, site))
     sub_cmd = ["dirac-wms-job-submit", "-f",
                "jobs.log", "LCG.UKI-SOUTHGRID-RALPP.uk.multi.jdl"]
     command_log = install_ui.complex_run(sub_cmd)
     check_dirac_helpers.jobid_to_file(command_log, outfile)
-    
-    print "Submitting tag job for %s VO to %s" % (user_VO, site)
+
+    print("Submitting tag job for %s VO to %s" % (user_VO, site))
     outfile.write("Submitting tag job for %s VO to %s\n" % (user_VO, site))
     sub_cmd = ["dirac-wms-job-submit", "-f",
                "jobs.log", "LCG.UKI-SOUTHGRID-RALPP.uk.tag.jdl"]
@@ -92,7 +96,7 @@ for site in SITES_TO_CHECK:
     check_dirac_helpers.jobid_to_file(command_log, outfile)
 
   if site == "LCG.UKI-LT2-IC-HEP.uk":
-    print "Submitting multicore job for %s VO to %s" % (user_VO, site)
+    print("Submitting multicore job for %s VO to %s" % (user_VO, site))
     outfile.write("Submitting multicore job for %s VO to %s\n" % (user_VO, site))
 
     sub_cmd = ["dirac-wms-job-submit", "-f",
@@ -100,7 +104,7 @@ for site in SITES_TO_CHECK:
     command_log = install_ui.complex_run(sub_cmd)
     check_dirac_helpers.jobid_to_file(command_log, outfile)
 
-    print "Submitting multicore job for %s VO to %s to HTCondorCE (ceprod00)" % (user_VO, site)
+    print("Submitting multicore job for %s VO to %s to HTCondorCE (ceprod00)" % (user_VO, site))
     outfile.write("Submitting multicore job for %s VO to %s to HTCondorCE\n" % (user_VO, site))
 
     sub_cmd = ["dirac-wms-job-submit", "-f",
@@ -108,14 +112,14 @@ for site in SITES_TO_CHECK:
     command_log = install_ui.complex_run(sub_cmd)
     check_dirac_helpers.jobid_to_file(command_log, outfile)
 
-    print "Submitting EL7 job for %s VO to %s" % (user_VO, site)
+    print("Submitting EL7 job for %s VO to %s" % (user_VO, site))
     outfile.write("Submitting EL7 job for %s VO to %s\n" % (user_VO, site))
     sub_cmd = ["dirac-wms-job-submit", "-f",
                "jobs.log", "LCG.UKI-LT2-IC-HEP.uk.el7.jdl"]
     command_log = install_ui.complex_run(sub_cmd)
     check_dirac_helpers.jobid_to_file(command_log, outfile)
-    
-    print "Submitting job requiring InputData for %s VO to %s\n" % (user_VO, site)
+
+    print("Submitting job requiring InputData for %s VO to %s\n" % (user_VO, site))
     outfile.write("Submitting job requiring InputData for %s VO to %s\n" % (user_VO, site))
     sub_cmd = ["dirac-wms-job-submit", "-f",
                "jobs.log", "LCG.UKI-LT2-IC-HEP.uk.inputdata.jdl"]
@@ -136,7 +140,7 @@ sub_cmd_api = "./testapi.py"
 install_ui.simple_run(sub_cmd_api)
 
 
-print '\nTo check on the status of the test jobs, please do:'
-print 'cd '+ working_dir
-print 'source bashrc'
-print 'dirac-wms-job-status -f jobs.log'
+print('\nTo check on the status of the test jobs, please do:')
+print('cd '+ working_dir)
+print('source bashrc or source /cvmfs/dirac.egi.eu/dirac/bashrc_gridpp')
+print('dirac-wms-job-status -f jobs.log')

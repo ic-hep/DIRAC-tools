@@ -1,7 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """
 generates the JDL and .sh files needed for the test
 """
+from __future__ import print_function
 import os
 import sys
 import re
@@ -233,7 +234,7 @@ def make_jdls(user_VO, sites_to_check):
   # so proxycrap should always be OK, but still do basic check
   match = re.search(r'username\s+:\s+(.+)', proxycrap)
   if not match:
-    print 'It should have never come that far.'
+    print('It should have never come that far.')
     sys.exit(0)
   dirac_username = match.group(1)
 
@@ -251,14 +252,8 @@ def make_jdls(user_VO, sites_to_check):
   diractestshfile = open("diractest.sh", 'w')
   diractestshfile.write(SHFILETEXT %diracinfo)
   os.chmod("diractest.sh", 0744)
-  
 
-  # file to test replicate and register command 
+  # file to test replicate and register command
   diracrepandregfile = open("repandreg.sh", "w")
   diracrepandregfile.write(REPANDREGTEXT %diracinfo)
   os.chmod("repandreg.sh", 0744)
-
-
-# for testing, where's travis when you need it
-# make_jdls("lsst", ["LCG.UKI-LT2-IC-HEP.uk", "LCG.UKI-LT2-QMUL.uk"])
-
