@@ -74,12 +74,12 @@ def check_all_jobs(dirac, logfile):
 
 
 def main():
+  """reads in VO so it knows which sites to submit to and then submits job"""
   parser = argparse.ArgumentParser()
   parser.add_argument("vo")
   args = parser.parse_args()
-  testvo=str(args.vo)
+  testvo = str(args.vo)
 
-  """send jobs """
   logfile = open("api.log", "w")
   dirac = Dirac()
   job = Job()

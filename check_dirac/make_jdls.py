@@ -155,7 +155,7 @@ echo "For reference the request name can be found in rep_and_reg_requests.txt"
 echo "ddrarr_${MYDATE} /%(VO)s/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt" >> rep_and_reg_requests.txt
 %(SHOWCMD)s ddrarr_${MYDATE}
 
-echo -e "\nPlease remeber to delete the file if transfer was sucess full or cancel the request if it wasn't:"
+echo -e "\nPlease remember to delete the file if transfer was sucess full or cancel the request if it wasn't:"
 echo -e "dirac-dms-remove-files /%(VO)s/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt" 
 echo -e "dirac-rms-request --Cancel ddrarr_${MYDATE}"
 

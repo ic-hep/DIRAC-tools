@@ -16,10 +16,9 @@ SITES_TO_CHECK = ["LCG.UKI-LT2-IC-HEP.uk",
                   "LCG.UKI-LT2-QMUL.uk",
                   "LCG.UKI-NORTHGRID-MAN-HEP.uk",
                   "LCG.UKI-NORTHGRID-LIV-HEP.uk",
-                  "LCG.UKI-SCOTGRID-GLASGOW.uk",
                   "LCG.UKI-SOUTHGRID-RALPP.uk",
                   "LCG.RAL-LCG2.uk",
-                  "VAC.UKI-NORTHGRID-MAN-HEP.uk",
+                  "VAC.UKI-SCOTGRID-GLASGOW.uk",
                   "LCG.UKI-LT2-Brunel.uk"
                  ]
 
@@ -136,7 +135,7 @@ install_ui.simple_run(wget_cmd_api)
 os.chmod("testapi.py", 0744)
 wget_cmd_aux = ["wget", "-np", "https://raw.githubusercontent.com/ic-hep/DIRAC-tools/master/user/testapi.sh"]
 install_ui.simple_run(wget_cmd_aux)
-sub_cmd_api = "./testapi.py"
+sub_cmd_api = ["./testapi.py", user_VO]
 install_ui.simple_run(sub_cmd_api)
 
 
