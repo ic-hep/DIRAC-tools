@@ -3,6 +3,8 @@
 requires a DIRAC UI to be set up (source bashrc)
 and a valid proxy: dirac-proxy-init -g [your vo here]_user -M
 """
+from __future__ import print_function
+
 # DIRAC does not work otherwise
 from DIRAC.Core.Base import Script
 Script.initialize()
@@ -12,9 +14,9 @@ from DIRAC.Interfaces.API.Job import Job
 from DIRAC.Interfaces.API.Dirac import Dirac
 
 import pprint
+import argparse
 
-
-def configure_and_submit(dirac, job, logfile):
+def configure_and_submit(dirac, job, logfile, testvo):
   """configure and send two jobs, one to grid and one to cloud"""
   job.setCPUTime(500)
   # testapi takes 'magic' as an argument
@@ -35,19 +37,19 @@ def configure_and_submit(dirac, job, logfile):
   joblog.close()
 
   # can I reuse 'job' ?
-  job.setName('APICloudtest')
-  job.setDestination('CLOUD.UKI-LT2-IC-HEP-lz.uk')
-  # This is GridPP DIRAC specific
-  job.setPlatform("AnyPlatform")
-
-  result = dirac.submitJob(job)
-  logfile.write('Submission Result: ')
-  pprint.pprint(result, logfile)
-  jobid = result['JobID']
-  # print job id to file for future reference
-  joblog = open("api_jobid.log", "a")
-  joblog.write(str(jobid)+'\n')
-  joblog.close()
+  if testvo == "lz":
+    job.setName('APICloudtest')
+    job.setDestination('CLOUD.UKI-LT2-IC-HEP-lz.uk')
+    # This is GridPP DIRAC specific
+    job.setPlatform("AnyPlatform")
+    result = dirac.submitJob(job)
+    logfile.write('Submission Result: ')
+    pprint.pprint(result, logfile)
+    jobid = result['JobID']
+    # print job id to file for future reference
+    joblog = open("api_jobid.log", "a")
+    joblog.write(str(jobid)+'\n')
+    joblog.close()
 
 
 
@@ -72,16 +74,21 @@ def check_all_jobs(dirac, logfile):
 
 
 def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("vo")
+  args = parser.parse_args()
+  testvo=str(args.vo)
+
   """send jobs """
   logfile = open("api.log", "w")
   dirac = Dirac()
   job = Job()
 
-  jobid = configure_and_submit(dirac, job, logfile)
+  jobid = configure_and_submit(dirac, job, logfile, testvo)
   check_job(dirac, jobid, logfile)
   check_all_jobs(dirac, logfile)
   logfile.close()
-  print "API logs can be found in api.log and api_jobid.log."
+  print("API logs can be found in api.log and api_jobid.log.")
 
 if __name__ == "__main__":
   main()
