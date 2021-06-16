@@ -26,3 +26,7 @@ for further information.
 
 WARNING: copydir.py and recursiverm.py are very old and will probably need updating.
 Pull requests welcome.
+
+* job_management_example.py
+a very basic example on how to access job information programmatically without using the web interface
+or the command line tools
