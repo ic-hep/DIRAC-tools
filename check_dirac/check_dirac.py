@@ -12,14 +12,17 @@ import make_jdls
 import check_dirac_helpers
 
 # according to pylint this has to be in SHOUTING
+# VAC.UKI-SCOTGRID-GLASGOW.uk is being decommissioned;
+# try Manchester instead, not that I am getting my hopes up.
+
 SITES_TO_CHECK = ["LCG.UKI-LT2-IC-HEP.uk",
                   "LCG.UKI-LT2-QMUL.uk",
-                  "LCG.UKI-NORTHGRID-MAN-HEP.uk",
+                  "LCG.UKI-LT2-Brunel.uk",
+                  "LCG.UKI-NORTHGRID-LANCS-HEP.uk",
                   "LCG.UKI-NORTHGRID-LIV-HEP.uk",
                   "LCG.UKI-SOUTHGRID-RALPP.uk",
                   "LCG.RAL-LCG2.uk",
-                  "VAC.UKI-SCOTGRID-GLASGOW.uk",
-                  "LCG.UKI-LT2-Brunel.uk"
+                  "VAC.UKI-NORTHGRID-MAN-HEP.uk",
                  ]
 
 # solidexperiment.org is currently hardcoded to be
@@ -100,14 +103,6 @@ for site in SITES_TO_CHECK:
 
     sub_cmd = ["dirac-wms-job-submit", "-f",
                "jobs.log", "LCG.UKI-LT2-IC-HEP.uk.multi.jdl"]
-    command_log = install_ui.complex_run(sub_cmd)
-    check_dirac_helpers.jobid_to_file(command_log, outfile)
-
-    print("Submitting multicore job for %s VO to %s to HTCondorCE (ceprod00)" % (user_VO, site))
-    outfile.write("Submitting multicore job for %s VO to %s to HTCondorCE\n" % (user_VO, site))
-
-    sub_cmd = ["dirac-wms-job-submit", "-f",
-               "jobs.log", "LCG.UKI-LT2-IC-HEP.uk.multi.htcondor.jdl"]
     command_log = install_ui.complex_run(sub_cmd)
     check_dirac_helpers.jobid_to_file(command_log, outfile)
 

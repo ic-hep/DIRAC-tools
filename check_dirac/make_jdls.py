@@ -195,14 +195,7 @@ def make_jdls(user_VO, sites_to_check):
       special_requirement = "NumberOfProcessors = 8;\n"
       jdlfile_special.write(JDLTEXT % (site, jobname, platform, special_requirement))
       jdlfile_special.close()
-      # 3) standard test, plus multiprocessor on htcondor CEs
-      filename = site + ".multi.htcondor.jdl"
-      jdlfile_special = open(filename, 'w')
-      jobname = "DiracTestMulti"
-      special_requirement = "NumberOfProcessors = 8;\nGridCE = {\"ceprod00.grid.hep.ph.ic.ac.uk\"};\n"
-      jdlfile_special.write(JDLTEXT % (site, jobname, platform, special_requirement))
-      jdlfile_special.close()
-      # 4) check that setting the Platform does not break job submission/matching
+      # 3) check that setting the Platform does not break job submission/matching
       filename = site + ".el7.jdl"
       jdlfile_special = open(filename, 'w')
       jobname = "DiracTestPlatform"
