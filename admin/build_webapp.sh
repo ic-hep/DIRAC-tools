@@ -7,7 +7,7 @@ set -ex
 SENCHA="/opt/dirac/sbin/Sencha/Cmd/sencha"
 EXTJS="/opt/dirac/extjs/ext-6.2.0"
 TEMPLATE_DIR="/opt/dirac/management/dirac-distribution/CompileTemplates"
-WEBAPP_BASE="/opt/dirac/WebAppDIRAC"
+WEBAPP_BASE="/opt/dirac/WebAppDIRAC/src/WebAppDIRAC"
 STATIC_BASE="${WEBAPP_BASE}/WebApp/static"
 APP_BASE="${STATIC_BASE}/DIRAC"
 
