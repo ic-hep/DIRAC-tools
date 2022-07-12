@@ -57,16 +57,31 @@ def check_prerequisites():
       print("This should be accessible by the current user.")
       sys.exit(0)
 
- # Check 2: Is this SL7 (other distibutions may work, but not now)
+ # Check 2: Is this SL6 or SL7 similar ?
   if not os.path.isfile("/etc/redhat-release"):
     print("Cannot find /etc/redhat-release.")
-    print("Script EL7, please.")
+    print("Script needs EL6 or EL7, please.")
     sys.exit(0)
   else:
-    if not  ".el7." in os.uname()[2]:
-      print("This doesn't look like an EL7 node. This will probably NOT WORK.")
+    # But of course Simon's is better
+    if not ".el6." in os.uname()[2] and not  ".el7." in os.uname()[2]:
+      print("This doesn't look like an EL6 or EL7 node. This will probably NOT WORK.")
       print("Press <ENTER> if you're sure.")
       raw_input()
+    #I liked my version, pah
+    #relfile = open("/etc/redhat-release", "r")
+    #content = relfile.read()
+    #relstring = "release "
+    #start_loc = content.find(relstring)
+    #releaseversion = content[(start_loc + 8):(start_loc + 9)]
+    #try:
+    #  releaseversion =  int(releaseversion)
+    #except ValueError:
+    #  print "Cannot determine release version."
+    #if releaseversion != 6 :
+    #  print "This does not seem to be an EL6 machine."
+    #  print "Proceed at your own risk, but it will probably NOT WORK."
+
 
   # Check 3: Cannot setup a new DIRAC UI on top of an old one
   if "DIRAC" in os.environ:
@@ -98,7 +113,7 @@ def extract_externals_version(logfile):
 
 
 def extract_diracos_version(logfile):
-  """PY2 ONLY: keep record of which diracos version was installed"""
+  """keep record of which diracos version was installed"""
   diracos_version = "Unknown"
   with open(logfile) as ff:
     for line in ff:

@@ -71,12 +71,12 @@ echo -e "Downloading testfile (/%(VO)s/user/dirac01.test/dirac01.testfile.txt)"
 dirac-dms-get-file /%(VO)s/user/dirac01.test/dirac01.testfile.txt
 cksum dirac01.testfile.txt
 # ideally this should be automated with some exit code (maybe later...)
-echo -e "Expected: 2240404671 105 dirac01.testfile.txt \n"
+echo -e "Expected: 2240404671 105 dirac01.testfile.txt \n" 
 TESTCHKSUM=`cksum dirac01.testfile.txt | awk {'print $1'}`
-if [ ! -z ${TESTCHKSUM} ]; then
+if [ ! -z ${TESTCHKSUM} ]; then 
     if [ $TESTCHKSUM == 2240404671 ]; then
         TESTDOWNLOAD="Success"
-    else
+    else 
         echo "Unexpected checksum found: ${TESTCHKSUM}"
     fi
 fi
@@ -85,40 +85,40 @@ echo -e "Creating a file, uploading it to gfe02"
 MYDATE=`date +%%s`
 # for running within a UI
 if [ -z "${DIRACSITE}" ]; then
-  DIRACSITE=`hostname`
+  DIRACSITE=`hostname` 
 fi
 env > testfile.${MYDATE}.${DIRACSITE}.txt
 echo "File to be uploaded: " testfile.${MYDATE}.${DIRACSITE}.txt
 dirac-dms-add-file -ddd /%(VO)s/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt testfile.${MYDATE}.${DIRACSITE}.txt UKI-LT2-IC-HEP-disk 2>&1 | tee dmsaddlog.${MYDATE}.txt
 # prepare summary
-if [ $? == 0 ];then
+if [ $? == 0 ];then 
     ISITGOOD=`grep "Successfully uploaded file to" dmsaddlog.${MYDATE}.txt | wc -l`
     echo $ISITGOOD
     if [ $ISITGOOD == 1 ];then
-        TESTUPLOAD="Success"
+	TESTUPLOAD="Success"
     fi
 fi
 
 sleep 3
 echo -e "\n"
 echo "Testing dirac-dms-lfn-replicas command"
-dirac-dms-lfn-replicas -ddd /%(VO)s/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt 2>&1 | tee dmslfnrep.${MYDATE}.txt
+dirac-dms-lfn-replicas -ddd /%(VO)s/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt 2>&1 | tee dmslfnrep.${MYDATE}.txt 
 
-if [ $? == 0 ];then
+if [ $? == 0 ];then 
     ISITGOOD=`grep "'Failed': {}}}" dmslfnrep.${MYDATE}.txt | wc -l`
     if [ $ISITGOOD == 1 ];then
-        TESTLISTLFN="Success"
+	TESTLISTLFN="Success"
     fi
 fi
 
 sleep 3
-echo -e "\n"
+echo -e "\n" 
 echo "Removing file"
 dirac-dms-remove-files /%(VO)s/user/%(DIRACUSERNAME)s/testfile.${MYDATE}.${DIRACSITE}.txt 2>&1 | tee dmsremove.${MYDATE}.txt
-if [ $? == 0 ];then
+if [ $? == 0 ];then 
     ISITGOOD=`grep "Successfully removed" dmsremove.${MYDATE}.txt | wc -l`
     if [ $ISITGOOD == 1 ];then
-        TESTREMOVE="Success"
+	TESTREMOVE="Success"
     fi
 fi
 
@@ -150,13 +150,13 @@ dirac-dms-add-file /%(VO)s/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt repre
 dirac-dms-replicate-and-register-request ddrarr_${MYDATE}  /%(VO)s/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt %(TARGETSE)s
 echo "Sleeping 120 s to give replicate request a chance to finish."
 sleep 120
-echo -e "\n"
+echo -e "\n" 
 echo "For reference the request name can be found in rep_and_reg_requests.txt"
 echo "ddrarr_${MYDATE} /%(VO)s/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt" >> rep_and_reg_requests.txt
 %(SHOWCMD)s ddrarr_${MYDATE}
 
 echo -e "\nPlease remember to delete the file if transfer was sucess full or cancel the request if it wasn't:"
-echo -e "dirac-dms-remove-files /%(VO)s/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt"
+echo -e "dirac-dms-remove-files /%(VO)s/user/%(DIRACUSERNAME)s/repregtest.${MYDATE}.txt" 
 echo -e "dirac-rms-request --Cancel ddrarr_${MYDATE}"
 
 echo -e "\nThe dirac-dms-replicate-and-register-request test script ends here."
@@ -232,8 +232,7 @@ def make_jdls(user_VO, sites_to_check):
   dirac_username = match.group(1)
 
   # files for solidexperiment.org can only be replicated to and from Belgium
-  # targetse = "UKI-LT2-QMUL2-disk"
-  targetse = "UKI-SOUTHGRID-RALPP-disk"
+  targetse = "UKI-LT2-QMUL2-disk"
   if user_VO == "solidexperiment.org":
     targetse = "BEgrid-ULB-VUB-disk"
   diracinfo = {}
