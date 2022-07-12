@@ -24,7 +24,7 @@ UI_VERSION = "7.3.24"
 PARAMETERS = {"USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
               "USERKEY": os.path.expanduser("~/.globus/userkey.pem"),}
 
-def setup_test_dir(user_VO):
+def setup_test_dir(user_VO, install_type):
   """
   make a new directory (using date and time) for the tests to run in
   """
@@ -33,10 +33,15 @@ def setup_test_dir(user_VO):
   # currently only SL7... replace with PY2/PY3 distinction
   # el = platform.linux_distribution()[1].split('.')[0]
   # dirac_test_dir = dirac_test_dir+'_EL'+ str(el)
+
   py_ver = "py3"
   if UI_VERSION.startswith('v'):
     py_ver = "py2"
+  # ignore python versions if using cvmfs install
+  if install_type == "cvmfs":
+    py_ver = "cvmfs"
   dirac_test_dir = dirac_test_dir + '_' + py_ver
+
 
   # this should only happen if program was quit in anger
   # the main purpose of this function is to annoy Simon :-)
@@ -230,7 +235,7 @@ def setup_ui(user_VO, install_type):
   else:
     print("Read password of length %d" % (len(proxypasswd)))
 
-  setup_test_dir(user_VO)
+  setup_test_dir(user_VO, install_type)
 
   source_cmd = []
   if install_type == "local":
