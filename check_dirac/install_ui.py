@@ -139,7 +139,7 @@ def install_local_ui(user_VO, proxypasswd):
 
 
   # Make a generic proxy to be able to download the config files
-  proxy_child = pexpect.spawn('dirac-proxy-init -r -x -N')
+  proxy_child = pexpect.spawn('dirac-proxy-init -x -N')
   proxy_child.expect('password:')
   proxy_child.sendline(proxypasswd)
 
@@ -151,14 +151,14 @@ def install_local_ui(user_VO, proxypasswd):
 
 
   # now all should be well, so make a %s VO proxy
-  make_proxy_string = 'dirac-proxy-init -r -g %s_user -U' % user_VO
+  make_proxy_string = 'dirac-proxy-init -g %s_user' % user_VO
   # print  make_proxy_string
   proxy_child = pexpect.spawn(make_proxy_string)
   # proxy_child = pexpect.spawn('dirac-proxy-init -g gridpp_user -M')
   proxy_child.expect('password:')
   proxy_child.sendline(proxypasswd)
-  # try to give a hint of what is going on
-  # print(proxy_child.read())
+  # the next line is magic, I used to know what it is doing.
+  proxy_child.read()
 
   # check if it's a voms-proxy and if it's not, try again. Once.
   proxycheck = complex_run(["dirac-proxy-info"])
