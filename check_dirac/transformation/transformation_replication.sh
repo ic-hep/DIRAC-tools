@@ -1,12 +1,28 @@
 #!/bin/bash
 
-#Upload random files to Imperial and tried to replicate to RALPP
+# Upload random files to Imperial and tried to replicate to RALPP
 # notes:
+# We are currently using:
+# ./transformation_replication.sh -test_filter False
 # dirac-transformation-cli
 # get <transformation number>
 # files are submitted in groups of 2
 # so with 5 files one will be left over
 # this should be processed once the transformation is cleaned
+# needs random_files_creator.sh in the same directory
+
+# do some checks
+if [ -z "$DIRACOS" ]
+then
+  echo "DIRACOS not set. Did you forget to set up/activate a DIRAC UI ?"
+  exit 0
+fi
+
+if [ ! -f "random_files_creator.sh" ] && [ ! -L "random_files_creator.sh" ]
+then
+  echo "This script relies on DIRAC/tests/System/random_files_creator.sh being present in the same directory."
+  exit 0
+fi
 
 SOURCE_SE="UKI-LT2-IC-HEP-disk"
 TARGET_SE="UKI-SOUTHGRID-RALPP-disk"
