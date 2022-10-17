@@ -6,6 +6,7 @@ set -ex
 
 SENCHA="/opt/dirac/sbin/Sencha/Cmd/sencha"
 EXTJS="/opt/dirac/extjs/ext-6.2.0"
+EXTVER="6.2.0"
 TEMPLATE_DIR="/opt/dirac/management/dirac-distribution/CompileTemplates"
 WEBAPP_BASE="/opt/dirac/WebAppDIRAC/src/WebAppDIRAC"
 STATIC_BASE="${WEBAPP_BASE}/WebApp/static"
@@ -42,6 +43,7 @@ function buildApp() {
   BUILD_DIR="${APP_BASE}/${APP}/build"
   mkdir -p "${BUILD_DIR}"
   sed -e "s#%APP_LOCATION%#DIRAC.${APP}.classes.${APP}#" \
+      -e "s#%EXT_VERSION%#${EXTVER}#" \
     "${TEMPLATE_DIR}/app.tpl" > "${BUILD_DIR}/app.tpl"
   ${SENCHA} -sdk "${EXTJS}" compile \
     -classpath "${CLASSPATH},${APP_BASE}/${APP}/classes" \
@@ -55,11 +57,14 @@ function buildApp() {
 
 # Build the extjs core lib
 function buildCore() {
-  mkdir -p ${STATIC_BASE}/core/build
+  BUILD_DIR="${STATIC_BASE}/core/build"
+  mkdir -p "${BUILD_DIR}"
+  sed -e "s#%EXT_VERSION%#${EXTVER}#" \
+    "${TEMPLATE_DIR}/core.tpl" > "${BUILD_DIR}/core.tpl"
   ${SENCHA} -sdk "${EXTJS}" compile -classpath "${CLASSPATH}" \
-    page -yui -input-file "${TEMPLATE_DIR}/core.tpl" \
-    -out "${STATIC_BASE}/core/build/index.html"
-  compressRes "${STATIC_BASE}/core/build"
+    page -yui -input-file "${BUILD_DIR}/core.tpl" \
+    -out "${BUILD_DIR}/index.html"
+  compressRes "${BUILD_DIR}"
 }
 
 # Copy static files
