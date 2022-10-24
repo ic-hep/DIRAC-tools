@@ -19,7 +19,7 @@ import sys
 
 def list_dir(cntxt, dir_name, fd, depth=0):
   if depth < 2:
-    print dir_name
+    print(dir_name)
  
   subdirs = []
   n_of_tries = 0
@@ -40,7 +40,7 @@ def list_dir(cntxt, dir_name, fd, depth=0):
       break
     except Exception as e:
       n_of_tries += 1
-      print "Failed to process %s (%s), file: %s" %(dir_name, e, thing)   
+      print("Failed to process %s (%s), file: %s" %(dir_name, e, thing))
   for d in subdirs:
     list_dir(cntxt, d, fd, depth=depth+1)
 
