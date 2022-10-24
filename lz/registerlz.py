@@ -37,21 +37,21 @@ def registerfile(pfnpath, checksum, size, fc):
   # if there is an old entry in the database, remove it
   override=True
   dbentry_result = fc.exists(lfnpath)
-  print dbentry_result
+  print(dbentry_result)
   if dbentry_result["OK"]:
     # this is dodgy
     if dbentry_result["Value"]["Successful"][lfnpath] != False:
-      print "DB entry already exists"
-      print dbentry_result["Value"]["Successful"]
+      print("DB entry already exists")
+      print(dbentry_result["Value"]["Successful"])
       if (override == True):
         fc.removeFile(lfnpath)
   else:
     # don't know what happened, just print to screen for now
-    print result
+    print(result)
 
   result = fc.addFile(fileDict) 
   if not result["OK"]:
-    print result
+    print(result)
     return
   if result["Value"]["Failed"]:
     print result["Value"]
@@ -62,7 +62,7 @@ def main():
 
   fc = FileCatalog()
 
-  print "WARNING: Override of old entries enabled."
+  print("WARNING: Override of old entries enabled.")
 
   i = 0
 
@@ -70,7 +70,7 @@ def main():
     line = line.strip()
     pfnpath, checksum, size = line.split(' ')
     if (i%100 == 0):
-      print i, pfnpath, checksum, size
+      print(i, pfnpath, checksum, size)
     registerfile(pfnpath, checksum, size, fc)
     i += 1
     
