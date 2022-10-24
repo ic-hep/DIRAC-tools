@@ -1,16 +1,17 @@
 #!/usr/bin/env python
-
-# source /vols/grid/ui/setup_ui.sh
-# needs a valid grid UI
-# voms-proxy-init --valid 24:00 --voms lz
+# This can now be run in a python3 DIRAC UI
+# source diracos/diracosrc
+# dirac-proxy-init -g lz_production
 # e.g. ./listlz.py 20170402
-# 
-# lists all files in a directory at 
+#
+# lists all files in a directory at
 # srm:///gfe02.grid.hep.ph.ic.ac.uk
 #      /pnfs/hep.ph.ic.ac.uk/data/lz/[whateveryouspecify]
 # prints path, checksum (adler32) and size (bytes) to a file
 # example output:
 # srm://gfe02.grid.hep.ph.ic.ac.uk/pnfs/hep.ph.ic.ac.uk/data/lz/lz/data/MDC2/background/LZAP-3.12.0-PHYSICS-3.12.1/20170402/lz_2017040200_lzap.root 863a975b 3088029923
+# note: the script runs much quicker if you avoid using the bdii (by adding : ':8443/srm/managerv2?SFN=')
+# srm://gfe02.grid.hep.ph.ic.ac.uk:8443/srm/managerv2?SFN=/pnfs/hep.ph.ic.ac.uk/data/lz/
 
 import gfal2
 import os
@@ -20,11 +21,11 @@ import sys
 def list_dir(cntxt, dir_name, fd, depth=0):
   if depth < 2:
     print(dir_name)
- 
+
   subdirs = []
   n_of_tries = 0
   thing = None
-  while n_of_tries < 3:  
+  while n_of_tries < 3:
     try:
       content = cntxt.listdir(dir_name)
       subdirs = []
@@ -33,7 +34,7 @@ def list_dir(cntxt, dir_name, fd, depth=0):
         info = cntxt.stat(fullpath)
         if stat.S_ISDIR(info.st_mode):
           subdirs.append(fullpath)
-        else:  
+        else:
           filesize = info.st_size
           filesum = cntxt.checksum(fullpath, "adler32")
           process_file(fullpath, filesize, filesum, fd)
@@ -53,7 +54,7 @@ for dir_name in sys.argv[1:]:
   ctxt = gfal2.creat_context()
   outfile = dir_name.replace("/", "_")
   fd = open("%s.txt" %outfile, "w")
-  fullpath = os.path.join("srm://gfe02.grid.hep.ph.ic.ac.uk/pnfs/hep.ph.ic.ac.uk/data/lz/lz/data/MDC2/background/LZAP-3.12.0-PHYSICS-3.12.1/", dir_name)
+  fullpath = os.path.join("srm://gfe02.grid.hep.ph.ic.ac.uk:8443/srm/managerv2?SFN=/pnfs/hep.ph.ic.ac.uk/data/lz/lz/data/hidden/raw/preSR2/202210/", dir_name)
   list_dir(ctxt, fullpath, fd)
   fd.close()
 
