@@ -1,11 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Main program for checking the status of dirac01.
 Installs a fresh UI and submits jobs to a variety of sites
-(CREAM, ARC) using the selected VO. Also tried to replicate
+(HTCondorCE, ARC) using the selected VO. Also tried to replicate
 and register a file.
 """
-from __future__ import print_function
 import os
 import sys
 import install_ui
@@ -25,17 +24,17 @@ def main():
   # 1. Setup a UI
   # pick which VO to test, default: gridpp
   print("Which VO do you want to test (default: gridpp) ?")
-  user_VO = raw_input("Your choices are: gridpp, lz, lsst, solidexperiment.org, skatelescope.eu: ") \
+  user_VO = input("Your choices are: gridpp, lz, lsst, solidexperiment.org, skatelescope.eu: ") \
             or "gridpp"
   if user_VO not in ["gridpp", "lz", "lsst", "solidexperiment.org", "skatelescope.eu"]:
-    print("Testing for %s VO is not supported." % user_VO)
+    print(f"Testing for {user_VO} VO is not supported.")
     sys.exit(0)
 
   # use cvmfs ui or install local one, default: local
-  install_type = raw_input("Install new local UI or use cvmfs (default: local)? Please enter: 'local'/'cvmfs': ") \
+  install_type = input("Install new local UI or use cvmfs (default: local)? Please enter: 'local'/'cvmfs': ") \
                  or "local"
   if install_type not in ["local", "cvmfs"]:
-    print("WARNING: install_type %s not known, proceeding with local install." % install_type)
+    print(f"WARNING: install_type {install_type} not known, proceeding with local install.")
     install_type = "local"
 
   install_ui.setup_ui(user_VO, install_type)
@@ -68,10 +67,10 @@ def main():
   check_dirac_helpers.complex_run(test_submitted_script_cmd)
 
   # write job numbers corresponding to sites to a log file
-  outfile_name = "%s/sites.log" %working_dir
+  outfile_name = os.path.join(working_dir, "sites.log")
 
 # 6. Job Submission
-  outfile = open(outfile_name, "a")
+  outfile = open(outfile_name, "a", encoding="utf-8")
 
   for site in sites_to_check:
 
@@ -79,7 +78,7 @@ def main():
     print(site)
 
     sub_cmd = ["dirac-wms-job-submit", "-f", "jobs.log", jdlfile]
-    outfile.write("Submitting standard job to %s\n" %site)
+    outfile.write(f"Submitting standard job to {site}\n")
     command_log = install_ui.complex_run(sub_cmd)
     check_dirac_helpers.jobid_to_file(command_log, outfile)
 
@@ -87,37 +86,37 @@ def main():
     # all special cases run either at RALPP or Imperial
 
     if site == "LCG.UKI-SOUTHGRID-RALPP.uk":
-      print("Submitting multicore job for %s VO to %s" % (user_VO, site))
-      outfile.write("Submitting multicore job for %s VO to %s\n" % (user_VO, site))
+      print(f"Submitting multicore job for {user_VO} VO to {site}")
+      outfile.write(f"Submitting multicore job for {user_VO} VO to {site}\n")
       sub_cmd = ["dirac-wms-job-submit", "-f",
                  "jobs.log", "LCG.UKI-SOUTHGRID-RALPP.uk.multi.jdl"]
       command_log = install_ui.complex_run(sub_cmd)
       check_dirac_helpers.jobid_to_file(command_log, outfile)
 
-      print("Submitting tag job for %s VO to %s" % (user_VO, site))
-      outfile.write("Submitting tag job for %s VO to %s\n" % (user_VO, site))
+      print(f"Submitting tag job for {user_VO} VO to {site}")
+      outfile.write(f"Submitting tag job for {user_VO} VO to {site}\n")
       sub_cmd = ["dirac-wms-job-submit", "-f",
                  "jobs.log", "LCG.UKI-SOUTHGRID-RALPP.uk.tag.jdl"]
       command_log = install_ui.complex_run(sub_cmd)
       check_dirac_helpers.jobid_to_file(command_log, outfile)
 
     if site == "LCG.UKI-LT2-IC-HEP.uk":
-      print("Submitting multicore job for %s VO to %s" % (user_VO, site))
-      outfile.write("Submitting multicore job for %s VO to %s\n" % (user_VO, site))
+      print(f"Submitting multicore job for {user_VO} VO to {site}")
+      outfile.write(f"Submitting multicore job for {user_VO} VO to {site}\n")
       sub_cmd = ["dirac-wms-job-submit", "-f",
                  "jobs.log", "LCG.UKI-LT2-IC-HEP.uk.multi.jdl"]
       command_log = install_ui.complex_run(sub_cmd)
       check_dirac_helpers.jobid_to_file(command_log, outfile)
 
-      print("Submitting EL7 job for %s VO to %s" % (user_VO, site))
-      outfile.write("Submitting EL7 job for %s VO to %s\n" % (user_VO, site))
+      print(f"Submitting EL7 job for {user_VO} VO to {site}")
+      outfile.write(f"Submitting EL7 job for {user_VO} VO to {site}\n")
       sub_cmd = ["dirac-wms-job-submit", "-f",
                  "jobs.log", "LCG.UKI-LT2-IC-HEP.uk.el7.jdl"]
       command_log = install_ui.complex_run(sub_cmd)
       check_dirac_helpers.jobid_to_file(command_log, outfile)
 
-      print("Submitting job requiring InputData for %s VO to %s\n" % (user_VO, site))
-      outfile.write("Submitting job requiring InputData for %s VO to %s\n" % (user_VO, site))
+      print(f"Submitting job requiring InputData for {user_VO} VO to {site}\n")
+      outfile.write(f"Submitting job requiring InputData for {user_VO} VO to {site}\n")
       sub_cmd = ["dirac-wms-job-submit", "-f",
                  "jobs.log", "LCG.UKI-LT2-IC-HEP.uk.inputdata.jdl"]
       command_log = install_ui.complex_run(sub_cmd)
@@ -129,7 +128,7 @@ def main():
   wget_cmd_api = ["wget", "-np", "-O", "testapi.py",
                   "https://raw.githubusercontent.com/ic-hep/DIRAC-tools/master/check_dirac/grid_and_cloud_api_test.py"]
   install_ui.simple_run(wget_cmd_api)
-  os.chmod("testapi.py", 0744)
+  os.chmod("testapi.py", 0o744)
   wget_cmd_aux = ["wget", "-np", "https://raw.githubusercontent.com/ic-hep/DIRAC-tools/master/user/testapi.sh"]
   install_ui.simple_run(wget_cmd_aux)
   sub_cmd_api = ["./testapi.py", user_VO]

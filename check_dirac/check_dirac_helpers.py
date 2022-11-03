@@ -1,9 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Helper functions for the dirac test module.
 Nothing to see here.
 """
-from __future__ import print_function
 import os
 import sys
 # import shutil
@@ -53,7 +52,7 @@ def check_prerequisites():
   for key_name in ("USERCERT", "USERKEY"):
     key_path = PARAMETERS[key_name]
     if not os.access(key_path, os.R_OK):
-      print("ERROR: Can't access the %s at %s." % (key_name, key_path))
+      print(f"ERROR: Can't access the {key_name} at {key_path}.")
       print("This should be accessible by the current user.")
       sys.exit(0)
 
@@ -66,7 +65,7 @@ def check_prerequisites():
     if not  ".el7." in os.uname()[2]:
       print("This doesn't look like an EL7 node. This will probably NOT WORK.")
       print("Press <ENTER> if you're sure.")
-      raw_input()
+      input()
 
   # Check 3: Cannot setup a new DIRAC UI on top of an old one
   if "DIRAC" in os.environ:
@@ -88,8 +87,8 @@ def check_prerequisites():
 def extract_externals_version(logfile):
   """for old releases that use dirac externals"""
   externals_version = "Unknown"
-  with open(logfile) as ff:
-    for line in ff:
+  with open(logfile, encoding='utf-8') as uilogfile:
+    for line in uilogfile:
       res = re.search(r"Externals", line)
       if res:
         words = line.split(' ')
@@ -100,8 +99,8 @@ def extract_externals_version(logfile):
 def extract_diracos_version(logfile):
   """PY2 ONLY: keep record of which diracos version was installed"""
   diracos_version = "Unknown"
-  with open(logfile) as ff:
-    for line in ff:
+  with open(logfile, encoding='utf-8') as uilogfile:
+    for line in uilogfile:
       # res = re.search(r"diracos.web.cern.ch/diracos/releases", line)
       res = re.search(r"Using CVMFS copy of diracos", line)
       if res:
@@ -112,9 +111,9 @@ def extract_diracos_version(logfile):
 
 def jobid_to_file(command_log, outfile):
   """extract jobid and write to file"""
-  jobid_start = command_log.find("JobID =")
+  jobid_start = command_log.decode().find("JobID =")
   if jobid_start != -1:
-    outfile.write(command_log[jobid_start:])
+    outfile.write(command_log[jobid_start:].decode())
   else:
     outfile.write("No job submitted!")
     outfile.write("\n")

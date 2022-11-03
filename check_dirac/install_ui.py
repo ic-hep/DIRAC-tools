@@ -1,25 +1,24 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 installs and configures a fresh DIRAC UI
 """
-from __future__ import print_function
 import os
 import sys
 import getpass
 import datetime
 import time
 import re
+import pexpect
 # apparently obsolete, haven't found a replacement yet
 # import platform
 from subprocess import Popen, PIPE
-import pexpect
 from check_dirac_helpers import simple_run, complex_run
 from check_dirac_helpers import extract_diracos_version
 
 # version format for PY2 is "v7r3p24", for PY3 use "7.3.24"
 # (including for choosing cvmfs UI)
-UI_VERSION = "7.3.24"
-# UI_VERSION = "v7r3p24"
+UI_VERSION = "7.3.26"
+# UI_VERSION = "v7r3p26"
 
 PARAMETERS = {"USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
               "USERKEY": os.path.expanduser("~/.globus/userkey.pem"),}
@@ -73,7 +72,7 @@ def install_local_ui(user_VO, proxypasswd):
                 "http://raw.githubusercontent.com/DIRACGrid/management/master/dirac-install.py"]
     simple_run(wget_cmd)
 
-    os.chmod("dirac-install", 0744)
+    os.chmod("dirac-install", 0o744)
     install_command_string = pwd + "/dirac-install" # needs full path
 
     # install UI
@@ -96,14 +95,16 @@ def install_local_ui(user_VO, proxypasswd):
       print("ERROR: Failed to source bashrc. Check output above.")
       sys.exit(0)
     # Get the vars from the output
-    for var in vars_out.split("\0"):
+    for var in vars_out.decode().split("\0"):
       var_name, _, var_value = var.partition("=")
-      os.environ[var_name] = var_value
+      # var_name can be empty
+      if var_name:
+        os.environ[var_name] = var_value
 
   else:
     curl_cmd = ["curl", "-LO", "https://github.com/DIRACGrid/DIRACOS2/releases/latest/download/DIRACOS-Linux-x86_64.sh"]
     simple_run(curl_cmd)
-    os.chmod("DIRACOS-Linux-x86_64.sh", 0744)
+    os.chmod("DIRACOS-Linux-x86_64.sh", 0o744)
 
     # install UI
     inst_cmd = "bash DIRACOS-Linux-x86_64.sh | tee install.log"
@@ -132,9 +133,10 @@ def install_local_ui(user_VO, proxypasswd):
     if proc.returncode:
       print("ERROR: Failed to source diracos/diracosrc. Check output above.")
       sys.exit(0)
-    for var in vars_out.split("\0"):
+    for var in vars_out.decode().split("\0"):
       var_name, _, var_value = var.partition("=")
-      os.environ[var_name] = var_value
+      if var_name:
+        os.environ[var_name] = var_value
 
     # pip install
     pipversion = "DIRAC == %s" %UI_VERSION
@@ -168,12 +170,12 @@ def install_local_ui(user_VO, proxypasswd):
   # check if it's a voms-proxy and if it's not, try again. Once.
   proxycheck = complex_run(["dirac-proxy-info"])
 
-  match = re.search(r'username\s+:\s+(.+)', proxycheck)
+  match = re.search(r'username\s+:\s+(.+)', proxycheck.decode())
   if not match:
     print('Cannot determine dirac user name. Something has gone terribly wrong.')
     sys.exit(0)
 
-  if proxycheck.find("VOMS fqan") < 0:
+  if proxycheck.decode().find("VOMS fqan") < 0:
     print('This proxy does not seem to contain a VOMS fqan, try again. Once')
     time.sleep(3)
     proxy_child = pexpect.spawn(make_proxy_string)
@@ -181,7 +183,7 @@ def install_local_ui(user_VO, proxypasswd):
     proxy_child.sendline(proxypasswd)
 
   proxycheck2 = complex_run(["dirac-proxy-info"])
-  if proxycheck2.find("VOMS fqan") < 0:
+  if proxycheck2.decode().find("VOMS fqan") < 0:
     print('This proxy still does not seem to contain a VOMS fqan. Giving up.')
     sys.exit(0)
 
@@ -201,16 +203,16 @@ def setup_voms_proxy(user_VO, proxypasswd):
   proxy_child.expect('password:')
   proxy_child.sendline(proxypasswd)
   # debugging: try to give a hint of what is going on
-  print(proxy_child.read())
+  print(proxy_child.read().decode())
   # check if it's a voms-proxy and if it's not, try again. Once.
   proxycheck = complex_run(["dirac-proxy-info"])
 
-  match = re.search(r'username\s+:\s+(.+)', proxycheck)
+  match = re.search(r'username\s+:\s+(.+)', proxycheck.decode())
   if not match:
     print('Cannot determine dirac user name. Something has gone terribly wrong.')
     sys.exit(0)
 
-  if proxycheck.find("VOMS fqan") < 0:
+  if proxycheck.decode().find("VOMS fqan") < 0:
     print('This proxy does not seem to contain a VOMS fqan, try again. Once')
     time.sleep(3)
     proxy_child = pexpect.spawn(make_proxy_string)
@@ -218,7 +220,7 @@ def setup_voms_proxy(user_VO, proxypasswd):
     proxy_child.sendline(proxypasswd)
 
   proxycheck2 = complex_run(["dirac-proxy-info"])
-  if proxycheck2.find("VOMS fqan") < 0:
+  if proxycheck2.decode().find("VOMS fqan") < 0:
     print('This proxy still does not seem to contain a VOMS fqan. Giving up.')
     sys.exit(0)
 
@@ -249,7 +251,7 @@ def setup_ui(user_VO, install_type):
   else:
     # python2 tests would have to be done by hand
     print("Activating python3 DIRAC env from cvmfs")
-    source_cmd = ["/bin/bash", "-c", "source /cvmfs/dirac.egi.eu/dirac/bashrc_gridpp_py3 && env -0"]
+    source_cmd = ["/bin/bash", "-c", "source /cvmfs/dirac.egi.eu/dirac/bashrc_gridpp && env -0"]
 
   # source the environment prior to invoking any DIRAC commands
   proc = Popen(source_cmd, stdout=PIPE)
@@ -257,9 +259,10 @@ def setup_ui(user_VO, install_type):
   if proc.returncode:
     print("ERROR: Failed to source diracos/diracosrc and/or bashrc. Check output above.")
     sys.exit(0)
-  for var in vars_out.split("\0"):
+  for var in vars_out.decode().split("\0"):
     var_name, _, var_value = var.partition("=")
-    os.environ[var_name] = var_value
+    if var_name:
+      os.environ[var_name] = var_value
 
   # setting up a VO proxy
   setup_voms_proxy(user_VO, proxypasswd)

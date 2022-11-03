@@ -1,8 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 generates the JDL and .sh files needed for the test
 """
-from __future__ import print_function
 import os
 import sys
 import re
@@ -225,7 +224,7 @@ def make_jdls(user_VO, sites_to_check):
   proxycrap = complex_run(["dirac-proxy-info"])
   # at this point, the proxy has already been verified
   # so proxycrap should always be OK, but still do basic check
-  match = re.search(r'username\s+:\s+(.+)', proxycrap)
+  match = re.search(r'username\s+:\s+(.+)', proxycrap.decode())
   if not match:
     print('It should have never come that far.')
     sys.exit(0)
@@ -245,9 +244,9 @@ def make_jdls(user_VO, sites_to_check):
   # while I am at it, also make the .sh file
   diractestshfile = open("diractest.sh", 'w')
   diractestshfile.write(SHFILETEXT %diracinfo)
-  os.chmod("diractest.sh", 0744)
+  os.chmod("diractest.sh", 0o744)
 
   # file to test replicate and register command
   diracrepandregfile = open("repandreg.sh", "w")
   diracrepandregfile.write(REPANDREGTEXT %diracinfo)
-  os.chmod("repandreg.sh", 0744)
+  os.chmod("repandreg.sh", 0o744)
