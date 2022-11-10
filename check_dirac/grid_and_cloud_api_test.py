@@ -38,7 +38,7 @@ def configure_and_submit(dirac, job, logfile, testvo):
   # can I reuse 'job' ?
   if testvo == "lz":
     job.setName('APICloudtest')
-    job.setDestination('LCG.UKI-LT2-IC-HEP-lz.uk')
+    job.setDestination('CLOUD.UKI-LT2-IC-HEP-lz.uk')
     # This is GridPP DIRAC specific
     job.setPlatform("AnyPlatform")
     result = dirac.submitJob(job)
