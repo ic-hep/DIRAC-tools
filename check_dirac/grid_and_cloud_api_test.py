@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-requires a DIRAC UI to be set up (source diracos/diracosrc)
-and a valid proxy: dirac-proxy-init -g [your vo here]_user
+requires a DIRAC UI to be set up (source bashrc)
+and a valid proxy: dirac-proxy-init -g [your vo here]_user -M
 """
+from __future__ import print_function
 
 # DIRAC does not work otherwise
 from DIRAC.Core.Base import Script
@@ -31,7 +32,7 @@ def configure_and_submit(dirac, job, logfile, testvo):
   jobid = result['JobID']
 
   # print job id to file for future reference
-  joblog = open("api_jobid.log", "a", encoding='utf-8')
+  joblog = open("api_jobid.log", "a")
   joblog.write(str(jobid)+'\n')
   joblog.close()
 
@@ -46,7 +47,7 @@ def configure_and_submit(dirac, job, logfile, testvo):
     pprint.pprint(result, logfile)
     jobid = result['JobID']
     # print job id to file for future reference
-    joblog = open("api_jobid.log", "a", encoding='utf-8')
+    joblog = open("api_jobid.log", "a")
     joblog.write(str(jobid)+'\n')
     joblog.close()
 
@@ -79,7 +80,7 @@ def main():
   args = parser.parse_args()
   testvo = str(args.vo)
 
-  logfile = open("api.log", "w", encoding='utf-8')
+  logfile = open("api.log", "w")
   dirac = Dirac()
   job = Job()
 

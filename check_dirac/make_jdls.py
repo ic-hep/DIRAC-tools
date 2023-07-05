@@ -179,7 +179,7 @@ def make_jdls(user_VO, sites_to_check):
     jdlfile.close()
 
     if site == "LCG.UKI-LT2-IC-HEP.uk":
-      # there are three extra test cases for Imperial:
+      # there are four extra test cases for Imperial:
       # 1) standard test, plus InputData requirement
       filename = site + ".inputdata.jdl"
       jdlfile_special = open(filename, 'w')
@@ -187,7 +187,7 @@ def make_jdls(user_VO, sites_to_check):
       special_requirement = "InputData = {\"/%s/user/dirac01.test/dirac01.testfile.txt\"};\n" % user_VO
       jdlfile_special.write(JDLTEXT % (site, jobname, platform, special_requirement))
       jdlfile_special.close()
-      # 2) standard test, plus multiprocessor (to be merged with 3 once we only have htcondor CEs)
+      # 2) standard test, plus multiprocessor
       filename = site + ".multi.jdl"
       jdlfile_special = open(filename, 'w')
       jobname = "DiracTestMulti"
@@ -202,18 +202,18 @@ def make_jdls(user_VO, sites_to_check):
       special_requirement = ""
       jdlfile_special.write(JDLTEXT % (site, jobname, platform, special_requirement))
       jdlfile_special.close()
+      # 4) GPU via Tag mechanism
+      filename = site + ".tag.jdl"
+      jdlfile_special = open(filename, 'w')
+      jobname = "DiracTestTagGPU"
+      special_requirement = "Tags = {\"GPU\"};\n"
+      jdlfile_special.write(JDLTEXT % (site, jobname, platform, special_requirement))
+      jdlfile_special.close()
 
     if site == "LCG.UKI-SOUTHGRID-RALPP.uk":
       platform = "AnyPlatform"
-      # there are two extra test cases for RALPP
-      # 1) test the tagging mechanism: HighMem queue at RALPP (should run at heplnx207)
-      filename = site + ".tag.jdl"
-      jdlfile_special = open(filename, 'w')
-      jobname = "DiracTestTag"
-      special_requirement = "Tags = {\"HighMem\"};\n"
-      jdlfile_special.write(JDLTEXT % (site, jobname, platform, special_requirement))
-      jdlfile_special.close()
-      # 2) test multi-core on ARC
+      # there is one extra test case for RALPP
+      # 1) test multi-core on ARC
       filename = site + ".multi.jdl"
       jdlfile_special = open(filename, 'w')
       jobname = "DiracTestMulti"

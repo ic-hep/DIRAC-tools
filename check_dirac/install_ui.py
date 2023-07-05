@@ -9,16 +9,15 @@ import datetime
 import time
 import re
 import pexpect
-# apparently obsolete, haven't found a replacement yet
-# import platform
+
 from subprocess import Popen, PIPE
 from check_dirac_helpers import simple_run, complex_run
 from check_dirac_helpers import extract_diracos_version
 
-# version format for PY2 is "v7r3p24", for PY3 use "7.3.24"
 # (including for choosing cvmfs UI)
-UI_VERSION = "7.3.26"
-# UI_VERSION = "v7r3p26"
+# no more PY2
+# UI_VERSION = "7.3.36"
+UI_VERSION = "8.0.21"
 
 PARAMETERS = {"USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
               "USERKEY": os.path.expanduser("~/.globus/userkey.pem"),}
@@ -34,8 +33,6 @@ def setup_test_dir(user_VO, install_type):
   # dirac_test_dir = dirac_test_dir+'_EL'+ str(el)
 
   py_ver = "py3"
-  if UI_VERSION.startswith('v'):
-    py_ver = "py2"
   # ignore python versions if using cvmfs install
   if install_type == "cvmfs":
     py_ver = "cvmfs"
@@ -65,84 +62,48 @@ def install_local_ui(user_VO, proxypasswd):
   """
   # at this point we are in the newly created directory
   pwd = os.getcwd()
-  # PY2
-  if UI_VERSION.startswith('v'):
-    # retrieve install executable
-    wget_cmd = ["wget", "-np", "-O", "dirac-install",
-                "http://raw.githubusercontent.com/DIRACGrid/management/master/dirac-install.py"]
-    simple_run(wget_cmd)
 
-    os.chmod("dirac-install", 0o744)
-    install_command_string = pwd + "/dirac-install" # needs full path
+  curl_cmd = ["curl", "-LO", "https://github.com/DIRACGrid/DIRACOS2/releases/latest/download/DIRACOS-Linux-x86_64.sh"]
+  simple_run(curl_cmd)
+  os.chmod("DIRACOS-Linux-x86_64.sh", 0o744)
 
-    # install UI
-    inst_cmd = "%s -r %s | tee install.log" %(install_command_string, UI_VERSION)
-    simple_run(inst_cmd, shell=True) # to capture output
+  # install UI
+  inst_cmd = "bash DIRACOS-Linux-x86_64.sh | tee install.log"
+  simple_run(inst_cmd, shell=True) # to capture output
 
-    # log ui and related versions in a convenient place
-    uiverfile = open('ui_versions.txt', 'w')
-    uiverfile.write('UI_VERSION: '+UI_VERSION+'\n')
-    diracos_version = extract_diracos_version("install.log")
-    uiverfile.write('DIRACOS: '+diracos_version+'\n')
-    uiverfile.close()
+  diracos_version = "UNKNOWN"
+  diracos_ver_filename = pwd + "/diracos/.diracos_version"
+  try:
+    diracos_ver_file = open(diracos_ver_filename, "r")
+  except OSError as stupiderror:
+    print('Problem opening file: ', stupiderror)
+  diracos_version = diracos_ver_file.read().strip()
 
-    # We have to "source" the bashrc now.
-    # This is a bit of a hassle to do as we're in python not bash.
-    source_cmd = ["/bin/bash", "-c", "source bashrc && env -0"]
-    proc = Popen(source_cmd, stdout=PIPE)
-    vars_out, _ = proc.communicate()
-    if proc.returncode:
-      print("ERROR: Failed to source bashrc. Check output above.")
-      sys.exit(0)
-    # Get the vars from the output
-    for var in vars_out.decode().split("\0"):
-      var_name, _, var_value = var.partition("=")
-      # var_name can be empty
-      if var_name:
-        os.environ[var_name] = var_value
+  os.remove(pwd+"/DIRACOS-Linux-x86_64.sh")
+  # log ui and related versions in a convenient place
+  uiverfile = open('ui_versions.txt', 'w')
+  uiverfile.write('UI_VERSION: '+UI_VERSION+'\n')
+  uiverfile.write('DIRACOS: '+diracos_version+'\n')
+  uiverfile.close()
 
-  else:
-    curl_cmd = ["curl", "-LO", "https://github.com/DIRACGrid/DIRACOS2/releases/latest/download/DIRACOS-Linux-x86_64.sh"]
-    simple_run(curl_cmd)
-    os.chmod("DIRACOS-Linux-x86_64.sh", 0o744)
+  # now 'activate' the env
+  print("Trying to activate the env")
+  source_cmd = ["/bin/bash", "-c", "source diracos/diracosrc && env -0"]
+  proc = Popen(source_cmd, stdout=PIPE)
+  vars_out, _ = proc.communicate()
+  if proc.returncode:
+    print("ERROR: Failed to source diracos/diracosrc. Check output above.")
+    sys.exit(0)
+  for var in vars_out.decode().split("\0"):
+    var_name, _, var_value = var.partition("=")
+    if var_name:
+      os.environ[var_name] = var_value
 
-    # install UI
-    inst_cmd = "bash DIRACOS-Linux-x86_64.sh | tee install.log"
-    simple_run(inst_cmd, shell=True) # to capture output
-
-    diracos_version = "UNKNOWN"
-    diracos_ver_filename = pwd + "/diracos/.diracos_version"
-    try:
-      diracos_ver_file = open(diracos_ver_filename, "r")
-    except OSError as stupiderror:
-      print('Problem opening file: ', stupiderror)
-    diracos_version = diracos_ver_file.read().strip()
-
-    os.remove(pwd+"/DIRACOS-Linux-x86_64.sh")
-    # log ui and related versions in a convenient place
-    uiverfile = open('ui_versions.txt', 'w')
-    uiverfile.write('UI_VERSION: '+UI_VERSION+'\n')
-    uiverfile.write('DIRACOS: '+diracos_version+'\n')
-    uiverfile.close()
-
-    # now 'activate' the env
-    print("Trying to activate the env")
-    source_cmd = ["/bin/bash", "-c", "source diracos/diracosrc && env -0"]
-    proc = Popen(source_cmd, stdout=PIPE)
-    vars_out, _ = proc.communicate()
-    if proc.returncode:
-      print("ERROR: Failed to source diracos/diracosrc. Check output above.")
-      sys.exit(0)
-    for var in vars_out.decode().split("\0"):
-      var_name, _, var_value = var.partition("=")
-      if var_name:
-        os.environ[var_name] = var_value
-
-    # pip install
-    pipversion = "DIRAC == %s" %UI_VERSION
-    print("Attempting pip install %s" %pipversion)
-    pip_cmd = ["pip", "install", pipversion]
-    simple_run(pip_cmd)
+  # pip install
+  pipversion = "DIRAC == %s" %UI_VERSION
+  print("Attempting pip install %s" %pipversion)
+  pip_cmd = ["pip", "install", pipversion]
+  simple_run(pip_cmd)
 
 
   # Make a generic proxy to be able to download the config files
@@ -155,7 +116,6 @@ def install_local_ui(user_VO, proxypasswd):
                       "-C", "dips://dirac01.grid.hep.ph.ic.ac.uk:9135/Configuration/Server", "-I"]
 
   simple_run(configure_ui_cmd)
-
 
   # now all should be well, so make a %s VO proxy
   make_proxy_string = 'dirac-proxy-init -g %s_user' % user_VO
@@ -198,7 +158,7 @@ def setup_voms_proxy(user_VO, proxypasswd):
   This is the last step. At this point the UI is installed and the env activated.
   """
 
-  make_proxy_string = 'dirac-proxy-init -r -g %s_user -U' % user_VO
+  make_proxy_string = 'dirac-proxy-init -g %s_user' % user_VO
   proxy_child = pexpect.spawn(make_proxy_string)
   proxy_child.expect('password:')
   proxy_child.sendline(proxypasswd)

@@ -93,13 +93,6 @@ def main():
       command_log = install_ui.complex_run(sub_cmd)
       check_dirac_helpers.jobid_to_file(command_log, outfile)
 
-      print(f"Submitting tag job for {user_VO} VO to {site}")
-      outfile.write(f"Submitting tag job for {user_VO} VO to {site}\n")
-      sub_cmd = ["dirac-wms-job-submit", "-f",
-                 "jobs.log", "LCG.UKI-SOUTHGRID-RALPP.uk.tag.jdl"]
-      command_log = install_ui.complex_run(sub_cmd)
-      check_dirac_helpers.jobid_to_file(command_log, outfile)
-
     if site == "LCG.UKI-LT2-IC-HEP.uk":
       print(f"Submitting multicore job for {user_VO} VO to {site}")
       outfile.write(f"Submitting multicore job for {user_VO} VO to {site}\n")
@@ -121,6 +114,14 @@ def main():
                  "jobs.log", "LCG.UKI-LT2-IC-HEP.uk.inputdata.jdl"]
       command_log = install_ui.complex_run(sub_cmd)
       check_dirac_helpers.jobid_to_file(command_log, outfile)
+
+      print(f"Submitting tag (GPU) job for {user_VO} VO to {site}")
+      outfile.write(f"Submitting tag (GPU) job for {user_VO} VO to {site}\n")
+      sub_cmd = ["dirac-wms-job-submit", "-f",
+                 "jobs.log", "LCG.UKI-LT2-IC-HEP.uk.tag.jdl"]
+      command_log = install_ui.complex_run(sub_cmd)
+      check_dirac_helpers.jobid_to_file(command_log, outfile)
+
 
   outfile.close()
 
@@ -144,7 +145,7 @@ def main():
   if os.path.isfile('bashrc'):
     print('source bashrc')
   elif install_type == "cvmfs":
-    print('source /cvmfs/dirac.egi.eu/dirac/bashrc_gridpp_py3')
+    print('source /cvmfs/dirac.egi.eu/dirac/bashrc_gridpp')
   else:
     print('source diracos/diracosrc')
   print('dirac-wms-job-status -f jobs.log')
