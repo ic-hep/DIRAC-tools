@@ -17,7 +17,7 @@ from check_dirac_helpers import extract_diracos_version
 # (including for choosing cvmfs UI)
 # no more PY2
 # UI_VERSION = "7.3.36"
-UI_VERSION = "8.0.21"
+UI_VERSION = "8.0.31"
 
 PARAMETERS = {"USERCERT": os.path.expanduser("~/.globus/usercert.pem"),
               "USERKEY": os.path.expanduser("~/.globus/userkey.pem"),}
@@ -97,6 +97,7 @@ def install_local_ui(user_VO, proxypasswd):
   for var in vars_out.decode().split("\0"):
     var_name, _, var_value = var.partition("=")
     if var_name:
+      print(f"{var_name} : {var_value}")
       os.environ[var_name] = var_value
 
   # pip install
@@ -107,9 +108,11 @@ def install_local_ui(user_VO, proxypasswd):
 
 
   # Make a generic proxy to be able to download the config files
-  proxy_child = pexpect.spawn('dirac-proxy-init -x -N')
-  proxy_child.expect('password:')
+  # timeout is needed if I happen to use a new version from cvmfs
+  proxy_child = pexpect.spawn('dirac-proxy-init -x -N -p', timeout=120)
+  # proxy_child.expect('password:') # replaced by -p
   proxy_child.sendline(proxypasswd)
+  proxy_child.wait() # make sure command is finished
 
   # configure UI
   configure_ui_cmd = ["dirac-configure", "-F", "-S", "GridPP",
@@ -118,13 +121,15 @@ def install_local_ui(user_VO, proxypasswd):
   simple_run(configure_ui_cmd)
 
   # now all should be well, so make a %s VO proxy
-  make_proxy_string = 'dirac-proxy-init -g %s_user' % user_VO
+  make_proxy_string = 'dirac-proxy-init -g %s_user -p' % user_VO
   # print  make_proxy_string
-  proxy_child = pexpect.spawn(make_proxy_string)
+  proxy_child = pexpect.spawn(make_proxy_string, timeout=120)
   # proxy_child = pexpect.spawn('dirac-proxy-init -g gridpp_user -M')
-  proxy_child.expect('password:')
+  # proxy_child.expect('password:')
   proxy_child.sendline(proxypasswd)
+  proxy_child.wait()
   # the next line is magic, I used to know what it is doing.
+  # (Maybe I was lacking the wait?)
   proxy_child.read()
 
   # check if it's a voms-proxy and if it's not, try again. Once.
@@ -158,10 +163,11 @@ def setup_voms_proxy(user_VO, proxypasswd):
   This is the last step. At this point the UI is installed and the env activated.
   """
 
-  make_proxy_string = 'dirac-proxy-init -g %s_user' % user_VO
+  make_proxy_string = 'dirac-proxy-init -g %s_user -p' % user_VO
   proxy_child = pexpect.spawn(make_proxy_string)
-  proxy_child.expect('password:')
+  # proxy_child.expect('password:') # replaced by -p
   proxy_child.sendline(proxypasswd)
+  proxy_child.wait() # wait for command to finish, it's not a race
   # debugging: try to give a hint of what is going on
   print(proxy_child.read().decode())
   # check if it's a voms-proxy and if it's not, try again. Once.
@@ -176,8 +182,9 @@ def setup_voms_proxy(user_VO, proxypasswd):
     print('This proxy does not seem to contain a VOMS fqan, try again. Once')
     time.sleep(3)
     proxy_child = pexpect.spawn(make_proxy_string)
-    proxy_child.expect('password:')
+    # proxy_child.expect('password:')
     proxy_child.sendline(proxypasswd)
+    proxy_child.wait()
 
   proxycheck2 = complex_run(["dirac-proxy-info"])
   if proxycheck2.decode().find("VOMS fqan") < 0:
@@ -202,14 +209,8 @@ def setup_ui(user_VO, install_type):
   source_cmd = []
   if install_type == "local":
     install_local_ui(user_VO, proxypasswd)
-    # this is python2
-    if os.path.isfile('bashrc'):
-      source_cmd = ["/bin/bash", "-c", "source bashrc && env -0"]
-    else:
-      # python3
-      source_cmd = ["/bin/bash", "-c", "source diracos/diracosrc && env -0"]
+    source_cmd = ["/bin/bash", "-c", "source diracos/diracosrc && env -0"]
   else:
-    # python2 tests would have to be done by hand
     print("Activating python3 DIRAC env from cvmfs")
     source_cmd = ["/bin/bash", "-c", "source /cvmfs/dirac.egi.eu/dirac/bashrc_gridpp && env -0"]
 

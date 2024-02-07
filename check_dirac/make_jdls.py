@@ -47,15 +47,6 @@ echo -e " \n ================================== \n"
 dirac-proxy-info
 
 echo -e " \n"
-ISITVAC=${DIRACSITE:0:3}
-
-if [ "$ISITVAC" == "VAC" ]; then
-  echo "This is a VAC site"
-  echo "Listing content of \$DIRACROOT/etc/dirac.cfg"
-  cat ${DIRACROOT}/etc/dirac.cfg
-  echo -e "==========\n"
-fi
-
 
 # use some CPU to prevent job getting killed for sitting idle
 perl -e '$z=time()+(2*60); while (time()<$z) { $j++; $j *= 1.1 for (1..9999); }'

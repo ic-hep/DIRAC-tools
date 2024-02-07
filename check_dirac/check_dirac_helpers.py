@@ -56,14 +56,16 @@ def check_prerequisites():
       print("This should be accessible by the current user.")
       sys.exit(0)
 
- # Check 2: Is this SL7 (other distibutions may work, but not now)
+  # Check 2: Is this SL7, 8 or 9 (other distibutions may work)
   if not os.path.isfile("/etc/redhat-release"):
     print("Cannot find /etc/redhat-release.")
     print("Script EL7, please.")
     sys.exit(0)
   else:
-    if not  ".el7." in os.uname()[2]:
-      print("This doesn't look like an EL7 node. This will probably NOT WORK.")
+    os_ver = os.uname()[2]
+    supported_os = [".el7", ".el8", ".el9"]
+    if not any(x in os_ver for x in supported_os):
+      print("This doesn't look like an EL7/8/9 node. This will probably NOT WORK.")
       print("Press <ENTER> if you're sure.")
       input()
 

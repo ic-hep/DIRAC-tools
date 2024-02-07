@@ -15,7 +15,7 @@ import check_dirac_helpers
 def main():
   """This is where all the action is. """
   print("Welcome to the basic dirac test script.")
-  print("Please make sure you are using an SL7 compatible machine.")
+  print("Please make sure you are using an EL7,8 or 9 compatible machine.")
   print("You will also need a valid user certificate in $HOME/.globus \n")
 
   # 0. Sanity checks
@@ -44,8 +44,9 @@ def main():
   sites_to_check = ["LCG.UKI-LT2-IC-HEP.uk",
                     "LCG.UKI-LT2-QMUL.uk",
                     "LCG.UKI-LT2-Brunel.uk",
-                    "LCG.UKI-NORTHGRID-LANCS-HEP.uk",
+                    "LCG.UKI-NORTHGRID-LANCS-HEP.uk"
                     "LCG.UKI-NORTHGRID-LIV-HEP.uk",
+                    "LCG.UKI-SCOTGRID-GLASGOW.uk",
                     "LCG.UKI-SOUTHGRID-RALPP.uk"]
 
   if user_VO == "solidexperiment.org":
