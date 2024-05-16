@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # Upload random files to Imperial and tried to replicate to RALPP
+# adapted from "DIRAC/tests/System/transformation_replication.sh -test_filter False"
 # notes:
 # We are currently using:
-# ./transformation_replication.sh -test_filter False
+# ./transformation_replication.sh t2k.org_user
 # dirac-transformation-cli
 # get <transformation number>
 # files are submitted in groups of 2
@@ -11,7 +12,15 @@
 # this should be processed once the transformation is cleaned
 # needs random_files_creator.sh in the same directory
 
+SOURCE_SE="UKI-LT2-IC-HEP-disk"
+TARGET_SE="UKI-SOUTHGRID-RALPP-disk"
+
 # do some checks
+if [ "$#" -lt 1 ]; then
+    echo "Usage: ./transformation_replication.sh dirac_group_name, e.g: ./transformation_replication.sh gridpp_user"
+    exit 0
+fi
+
 if [ -z "$DIRACOS" ]
 then
   echo "DIRACOS not set. Did you forget to set up/activate a DIRAC UI ?"
@@ -24,27 +33,28 @@ then
   exit 0
 fi
 
-SOURCE_SE="UKI-LT2-IC-HEP-disk"
-TARGET_SE="UKI-SOUTHGRID-RALPP-disk"
+user_vo=$(echo $1 | cut -d_ -f1)
+
 
 # what does the test filter actually do ?
-usage="$(basename "$0") needs -test_filter option to be set:
-Example:
-$(basename "$0") -test_filter [True,False]"
-if [[ $# -ne 2 ]]; then
-  echo "$usage"
-exit 1
-fi
+# it's currently hardcoded to: -test_filter False
+#usage="$(basename "$0") needs -test_filter option to be set:
+#Example:
+#$(basename "$0") -test_filter [True,False]"
+#if [[ $# -ne 2 ]]; then
+#  echo "$usage"
+#exit 1
+#fi
 
 TestFilter="False"
-if [[ "$1" = "-test_filter" ]]; then
-   if [[ "$2" == "True" ]] || [[ "$2" == "False" ]]; then
-     TestFilter=$2
-   else
-     echo "$usage"
-     exit 1
-   fi
-fi
+#if [[ "$1" = "-test_filter" ]]; then
+#   if [[ "$2" == "True" ]] || [[ "$2" == "False" ]]; then
+#     TestFilter=$2
+#   else
+#     echo "$usage"
+#     exit 1
+#   fi
+#fi
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
@@ -54,13 +64,20 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # echo "dirac-login dirac_prod"
 # dirac-login dirac_prod
-echo "dirac-proxy-init -g gridpp_user"
-dirac-proxy-init -g gridpp_user
+echo "dirac-proxy-init -g $1"
+dirac-proxy-init -g $1
 if [[ "${?}" -ne 0 ]]; then
    exit 1
 fi
 
 echo " "
+
+# bad hack to get the dirac user name
+# this is what happens when you try to make
+# this script available to different people
+# quickly
+# I hang my head in shame
+user_name=`dirac-proxy-info | grep username | cut -d: -f2 | xargs`
 
 #Values to be used
 stime=$(date +"%H%M%S")
@@ -74,10 +91,11 @@ fi
 
 echo "Creating TransformationSystemTest"
 mkdir -p TransformationSystemTest
-directory=/gridpp/diracCertification/Test/INIT/$version/$tdate/$stime/replication
+directory=/${user_vo}/user/${user_name:0:1}/${user_name}/transformationCertification/Test/INIT/$version/$tdate/$stime/replication
 
-echo "Source: UKI-LT2-IC-HEP-disk"
-echo "Target: UKI-SOUTHGRID-RALPP-disk"
+echo "Source SE: $SOURCE_SE"
+echo "Target SE: $TARGET_SE"
+echo "Trying to write to $directory"
 
 # Create unique files"
 echo ""
@@ -136,3 +154,10 @@ then
 else
   echo 'Successful check'
 fi
+
+echo "====================================="
+echo "This script has finished."
+echo "Your transformation id is: ${transID}"
+echo "You can check on your transformation using:"
+echo "dirac-transformation-cli"
+echo "get ${transID}"

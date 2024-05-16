@@ -1,0 +1,8 @@
+git clone https://github.com/DIRACGrid/DIRAC.git DIRACRepo/
+cd DIRACRepo
+git checkout origin/integration
+cd ..
+wget https://raw.githubusercontent.com/ic-hep/DIRAC-tools/main/check_dirac/transformation/transformation_replication.sh
+chmod u+x transformation_replication.sh
+ln -s DIRACRepo/tests/System/random_files_creator.sh .
+./transformation_replication.sh t2k.org_user
