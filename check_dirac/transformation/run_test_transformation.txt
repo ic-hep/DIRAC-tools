@@ -6,3 +6,9 @@ wget https://raw.githubusercontent.com/ic-hep/DIRAC-tools/main/check_dirac/trans
 chmod u+x transformation_replication.sh
 ln -s DIRACRepo/tests/System/random_files_creator.sh .
 ./transformation_replication.sh t2k.org_user
+Then (blindly copied from the certification card):
+dirac-transformation-cli
+setStatus Flush <transformation id>
+start <transformation id>
+check FTS server for jobs:
+https://fts00.grid.hep.ph.ic.ac.uk:8449/fts3/ftsmon/#/
