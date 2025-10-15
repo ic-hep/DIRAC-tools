@@ -1,6 +1,9 @@
 #!/bin/bash
 # A helper script to compile the DIRAC WebApp without running the full docker
 # build/packaging process.
+# After an update, run 'git clean -fdx' in the WebAppDIRAC dir before rebuilding.
+# This gets rid of temporary output files that are otherwise ignored by git, 
+# but can still interfere with the build.
 
 set -ex
 
