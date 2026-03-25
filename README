@@ -3,7 +3,7 @@ https://dirac.gridpp.ac.uk
 
 Shorthand for Daniela:
 git clone git@github.com:ic-hep/DIRAC-tools.git
+[edit code, here calle afile.py]
 git add afile.py
 git commit -m "a comment"
-git remote set-url origin https://marianne013@github.com/ic-hep/DIRAC-tools
-git push -u origin master
+git push
